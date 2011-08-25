@@ -1,7 +1,7 @@
 = ruby-mpfi
 
-* http://rubyforge.org/projects/ruby-mpfr/
-* http://gemcutter.org/gems/ruby-mpfi/
+* https://github.com/ytaka/ruby-mpfi/
+* http://rubygems.org/gems/ruby-mpfi/
 
 == Description:
 
@@ -27,7 +27,7 @@ You must require 'mpfr' to use 'mpfi'.
 == Requirements:
 
 * Ruby[http://www.ruby-lang.org/] 1.9.1 or later
-* MPFR[http://www.mpfr.org/] 2.4.1 or later
+* MPFR[http://www.mpfr.org/] 3.0.0 or later
 * MPFI[http://gforge.inria.fr/projects/mpfi/] 1.3.4 or later
 * ruby-mpfr
 
@@ -36,7 +36,7 @@ The package of rubygems of ruby-mpfr is provided.
 You can install ruby-mpfr with the following command
 in the system satisfying the above requirements.
  
- $ sudo gem install ruby-mpfi
+ $ gem install ruby-mpfi
 
 == License:
 
