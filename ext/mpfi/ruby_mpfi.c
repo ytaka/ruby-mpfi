@@ -74,11 +74,13 @@ static void r_mpfi_set_from_array (MPFI *ptr, VALUE obj)
 static void r_mpfi_set_from_string (MPFI *ptr, VALUE obj)
 {
   char *str;
-  if(RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_str__))){
+  if (RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_str__))) {
     str = StringValuePtr(obj);
-  }else if(RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_s__))){
+  } else if (RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_s__))){
     VALUE tmp = rb_funcall(obj, to_s, 0);
     str = StringValuePtr(tmp);
+  } else {
+    rb_raise(rb_eArgError, "Can not convert to strings.");
   }
   if(mpfi_set_str(ptr, str, 10) != 0) {
     rb_raise(rb_eArgError, "Invalid string format of MPFI initialization: \"%s\"", str);
@@ -232,9 +234,11 @@ char *r_mpfi_dump_to_string(MPFI *ptr_s)
 static VALUE r_mpfi_marshal_dump(VALUE self)
 {
   MPFI *ptr_s;
+  char *ret_str;
+  VALUE ret_val;
   r_mpfi_get_struct(ptr_s, self);
-  char *ret_str = r_mpfi_dump_to_string(ptr_s);
-  VALUE ret_val = rb_str_new2(ret_str);
+  ret_str = r_mpfi_dump_to_string(ptr_s);
+  ret_val = rb_str_new2(ret_str);
   mpfr_free_str(ret_str);
   return ret_val;
 }
@@ -313,14 +317,15 @@ static VALUE r_mpfi_round_prec (VALUE self, VALUE prec)
 static VALUE r_mpfi_inspect(VALUE self)
 {
   MPFI *ptr_s;
-  r_mpfi_get_struct(ptr_s, self);
   char *ret_str;
+  VALUE ret_val;
+  r_mpfi_get_struct(ptr_s, self);
   if (!mpfr_asprintf(&ret_str, "#<MPFI:%lx,['%.Re %.Re'],%d>",
 		    NUM2LONG(rb_funcall(self, object_id, 0)), r_mpfi_left_ptr(ptr_s),
 		    r_mpfi_right_ptr(ptr_s), mpfi_get_prec(ptr_s))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
-  VALUE ret_val = rb_str_new2(ret_str);
+  ret_val = rb_str_new2(ret_str);
   mpfr_free_str(ret_str);
   return ret_val;
 }
@@ -329,15 +334,17 @@ static VALUE r_mpfi_inspect(VALUE self)
 static VALUE r_mpfi_to_str_ary(VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   char *ret_str1, *ret_str2;
+  VALUE str1, str2;
+  r_mpfi_get_struct(ptr_self, self);
   if (!mpfr_asprintf(&ret_str1, "%.Re", r_mpfi_left_ptr(ptr_self))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
   if (!mpfr_asprintf(&ret_str2, "%.Re", r_mpfi_right_ptr(ptr_self))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
-  VALUE str1 = rb_str_new2(ret_str1), str2 = rb_str_new2(ret_str2);
+  str1 = rb_str_new2(ret_str1);
+  str2 = rb_str_new2(ret_str2);
   mpfr_free_str(ret_str1);
   mpfr_free_str(ret_str2);
   return rb_ary_new3(2, str1, str2);
@@ -347,16 +354,18 @@ static VALUE r_mpfi_to_str_ary(VALUE self)
 static VALUE r_mpfi_to_strf_ary(VALUE self, VALUE format_str)
 {
   MPFI *ptr_self;
+  char *format, *ret_str1, *ret_str2;
+  VALUE str1, str2;
   r_mpfi_get_struct(ptr_self, self);
-  char *format = StringValuePtr(format_str);
-  char *ret_str1, *ret_str2;
+  format = StringValuePtr(format_str);
   if (!mpfr_asprintf(&ret_str1, format, r_mpfi_left_ptr(ptr_self))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
   if (!mpfr_asprintf(&ret_str2, format, r_mpfi_right_ptr(ptr_self))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
-  VALUE str1 = rb_str_new2(ret_str1), str2 = rb_str_new2(ret_str2);
+  str1 = rb_str_new2(ret_str1);
+  str2 = rb_str_new2(ret_str2);
   mpfr_free_str(ret_str1);
   mpfr_free_str(ret_str2);
   return rb_ary_new3(2, str1, str2);
@@ -486,8 +495,8 @@ static VALUE r_mpfi_div (VALUE self, VALUE other)
 static VALUE r_mpfi_mul_2si (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   mpfi_mul_2si(ptr_ret, ptr_self, NUM2INT(argv[0]));
   return val_ret;
@@ -497,8 +506,8 @@ static VALUE r_mpfi_mul_2si (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_div_2si (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   mpfi_div_2si(ptr_ret, ptr_self, NUM2INT(argv[0]));
   return val_ret;
@@ -508,8 +517,8 @@ static VALUE r_mpfi_div_2si (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_neg(int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   mpfi_neg(ptr_ret, ptr_self);
   return val_ret;
@@ -519,8 +528,8 @@ static VALUE r_mpfi_neg(int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_inv(int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   mpfi_inv(ptr_ret, ptr_self);
   return val_ret;
@@ -530,8 +539,8 @@ static VALUE r_mpfi_inv(int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_abs(int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   mpfi_abs(ptr_ret, ptr_self);
   return val_ret;
@@ -545,8 +554,8 @@ static VALUE r_mpfi_abs(int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_cmp (VALUE self, VALUE other)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   int ret;
+  r_mpfi_get_struct(ptr_self, self);
 
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
     MPFI *ptr_other;
@@ -726,9 +735,9 @@ static VALUE r_mpfi_equal_p (VALUE self, VALUE other)
 static VALUE r_mpfi_diam_abs (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_diam_abs(ptr_ret, ptr_self));
   return val_ret;
@@ -738,9 +747,9 @@ static VALUE r_mpfi_diam_abs (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_diam_rel (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_diam_rel(ptr_ret, ptr_self));
   return val_ret;
@@ -750,9 +759,9 @@ static VALUE r_mpfi_diam_rel (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_diam (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_diam(ptr_ret, ptr_self));
   return val_ret;
@@ -762,9 +771,9 @@ static VALUE r_mpfi_diam (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_mag (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_mag(ptr_ret, ptr_self));
   return val_ret;
@@ -774,9 +783,9 @@ static VALUE r_mpfi_mag (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_mig (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_mig(ptr_ret, ptr_self));
   return val_ret;
@@ -786,9 +795,9 @@ static VALUE r_mpfi_mig (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_mid (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   r_mpfi_set_function_state(mpfi_mid(ptr_ret, ptr_self));
   return val_ret;
@@ -798,8 +807,8 @@ static VALUE r_mpfi_mid (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_mid_interval (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   mpfi_mid_interval(ptr_ret, ptr_self);
   return val_ret;
@@ -809,9 +818,9 @@ static VALUE r_mpfi_mid_interval (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_alea (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(0, 1, argc, argv));
   mpfi_alea(ptr_ret, ptr_self);
   return val_ret;
@@ -833,9 +842,9 @@ static VALUE r_mpfi_get_d(VALUE self)
 static VALUE r_mpfi_get_fr(VALUE self)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
   MPFR *ptr_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfr_make_struct_init2(val_ret, ptr_ret, mpfi_get_prec(ptr_self));
   mpfi_get_fr(ptr_ret, ptr_self);
   return val_ret;
@@ -961,8 +970,8 @@ static VALUE r_mpfi_strictly_include (VALUE self, VALUE other)
 static VALUE r_mpfi_include (VALUE self, VALUE other)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   int result;
+  r_mpfi_get_struct(ptr_self, self);
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
@@ -1007,9 +1016,9 @@ static VALUE r_mpfi_is_empty (VALUE self)
 static VALUE r_mpfi_intersect (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_get_struct(ptr_a0, argv[0]);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_intersect(ptr_ret, ptr_self, ptr_a0));
   if(mpfi_is_empty(ptr_ret) > 0){
@@ -1026,9 +1035,9 @@ static VALUE r_mpfi_intersect (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_intersect2 (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_get_struct(ptr_a0, argv[0]);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_intersect(ptr_ret, ptr_self, ptr_a0));
   return val_ret;
@@ -1038,9 +1047,9 @@ static VALUE r_mpfi_intersect2 (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_union (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_get_struct(ptr_a0, argv[0]);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_union(ptr_ret, ptr_self, ptr_a0));
   return val_ret;
@@ -1054,9 +1063,10 @@ static VALUE r_mpfi_union (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_increase (VALUE self, VALUE a0)
 {
   MPFI *ptr_self;
-  r_mpfi_get_struct(ptr_self, self);
   MPFR *ptr_a0;
-  volatile VALUE tmp_a0 = r_mpfr_new_fr_obj(a0);
+  volatile VALUE tmp_a0;
+  r_mpfi_get_struct(ptr_self, self);
+  tmp_a0 = r_mpfr_new_fr_obj(a0);
   r_mpfr_get_struct(ptr_a0, tmp_a0);
   r_mpfi_set_function_state(mpfi_increase(ptr_self, ptr_a0));
   return self;
@@ -1066,8 +1076,8 @@ static VALUE r_mpfi_increase (VALUE self, VALUE a0)
 static VALUE r_mpfi_blow (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
-  r_mpfi_get_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_blow(ptr_ret, ptr_self, NUM2DBL(argv[0])));
   return val_ret;
@@ -1077,9 +1087,10 @@ static VALUE r_mpfi_blow (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_bisect (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret1, *ptr_ret2;
-  r_mpfi_get_struct(ptr_self, self);
-  int prec = r_mpfr_prec_from_optional_argument(0, 1, argc, argv);
+  int prec;
   VALUE val_ret1, val_ret2;
+  r_mpfi_get_struct(ptr_self, self);
+  prec = r_mpfr_prec_from_optional_argument(0, 1, argc, argv);
   r_mpfi_make_struct_init2(val_ret1, ptr_ret1, prec);
   r_mpfi_make_struct_init2(val_ret2, ptr_ret2, prec);
   r_mpfi_set_function_state(mpfi_bisect(ptr_ret1, ptr_ret2, ptr_self));
@@ -1092,10 +1103,10 @@ void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
 {
   int i;
   mpfr_t l;
+  mpfr_t x_diam;
   mpfr_init(l);
   mpfr_sub(l, r_mpfi_right_ptr(x), r_mpfi_left_ptr(x), GMP_RNDD);
   mpfr_div_si(l, l, num, GMP_RNDD);
-  mpfr_t x_diam;
   mpfr_init(x_diam);
   mpfi_diam_abs(x_diam, x);
   if(mpfr_cmp(x_diam, l) > 0 && num > 1){
@@ -1121,9 +1132,10 @@ void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
 static VALUE r_mpfi_subdivision (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self;
+  int i, num, prec;
   r_mpfi_get_struct(ptr_self, self);
-  int i, num = NUM2INT(argv[0]);
-  int prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
+  num = NUM2INT(argv[0]);
+  prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
   MPFI *f[num];
   VALUE vf[num];
   for(i = 0; i < num; i++){
@@ -1141,8 +1153,9 @@ static VALUE r_mpfi_math_add (int argc, VALUE *argv, VALUE self)
 {
   VALUE val_ret;
   MPFI *ptr_a0, *ptr_ret;
+  volatile VALUE tmp_argv0;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
-  volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
+  tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
     MPFI *ptr_other;
@@ -1170,8 +1183,9 @@ static VALUE r_mpfi_math_sub (int argc, VALUE *argv, VALUE self)
 {
   VALUE val_ret;
   MPFI *ptr_a0, *ptr_ret;
+  volatile VALUE tmp_argv0;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
-  volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
+  tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
     MPFI *ptr_other;
@@ -1199,8 +1213,9 @@ static VALUE r_mpfi_math_mul (int argc, VALUE *argv, VALUE self)
 {
   VALUE val_ret;
   MPFI *ptr_a0, *ptr_ret;
+  volatile VALUE tmp_argv0;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
-  volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
+  tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
     MPFI *ptr_other;
@@ -1228,8 +1243,9 @@ static VALUE r_mpfi_math_div (int argc, VALUE *argv, VALUE self)
 {
   VALUE val_ret;
   MPFI *ptr_a0, *ptr_ret;
+  volatile VALUE tmp_argv0;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
-  volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
+  tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
   if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
     MPFI *ptr_other;
@@ -1256,9 +1272,9 @@ static VALUE r_mpfi_math_div (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_sqr (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_sqr(ptr_ret, ptr_a0));
   return val_ret;
@@ -1268,9 +1284,9 @@ static VALUE r_mpfi_math_sqr (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_sqrt (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_sqrt(ptr_ret, ptr_a0));
   return val_ret;
@@ -1284,9 +1300,9 @@ static VALUE r_mpfi_math_sqrt (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_log (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_log(ptr_ret, ptr_a0));
   return val_ret;
@@ -1296,9 +1312,9 @@ static VALUE r_mpfi_math_log (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_exp (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_exp(ptr_ret, ptr_a0));
   return val_ret;
@@ -1308,9 +1324,9 @@ static VALUE r_mpfi_math_exp (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_exp2 (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_exp2(ptr_ret, ptr_a0));
   return val_ret;
@@ -1320,9 +1336,9 @@ static VALUE r_mpfi_math_exp2 (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_cos (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_cos(ptr_ret, ptr_a0));
   return val_ret;
@@ -1332,9 +1348,9 @@ static VALUE r_mpfi_math_cos (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_sin (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_sin(ptr_ret, ptr_a0));
   return val_ret;
@@ -1344,9 +1360,9 @@ static VALUE r_mpfi_math_sin (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_tan (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_tan(ptr_ret, ptr_a0));
   return val_ret;
@@ -1356,9 +1372,9 @@ static VALUE r_mpfi_math_tan (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_acos (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_acos(ptr_ret, ptr_a0));
   return val_ret;
@@ -1368,9 +1384,9 @@ static VALUE r_mpfi_math_acos (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_asin (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_asin(ptr_ret, ptr_a0));
   return val_ret;
@@ -1380,9 +1396,9 @@ static VALUE r_mpfi_math_asin (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_atan (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_atan(ptr_ret, ptr_a0));
   return val_ret;
@@ -1392,9 +1408,9 @@ static VALUE r_mpfi_math_atan (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_cosh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_cosh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1404,9 +1420,9 @@ static VALUE r_mpfi_math_cosh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_sinh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_sinh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1416,9 +1432,9 @@ static VALUE r_mpfi_math_sinh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_tanh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_tanh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1428,9 +1444,9 @@ static VALUE r_mpfi_math_tanh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_acosh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_acosh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1440,9 +1456,9 @@ static VALUE r_mpfi_math_acosh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_asinh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_asinh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1452,9 +1468,9 @@ static VALUE r_mpfi_math_asinh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_atanh (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_atanh(ptr_ret, ptr_a0));
   return val_ret;
@@ -1464,9 +1480,9 @@ static VALUE r_mpfi_math_atanh (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_log1p (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_log1p(ptr_ret, ptr_a0));
   return val_ret;
@@ -1476,9 +1492,9 @@ static VALUE r_mpfi_math_log1p (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_expm1 (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_expm1(ptr_ret, ptr_a0));
   return val_ret;
@@ -1488,9 +1504,9 @@ static VALUE r_mpfi_math_expm1 (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_log2 (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_log2(ptr_ret, ptr_a0));
   return val_ret;
@@ -1500,9 +1516,9 @@ static VALUE r_mpfi_math_log2 (int argc, VALUE *argv, VALUE self)
 static VALUE r_mpfi_math_log10 (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_a0, *ptr_ret;
+  VALUE val_ret;
   volatile VALUE tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  VALUE val_ret;
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_log10(ptr_ret, ptr_a0));
   return val_ret;

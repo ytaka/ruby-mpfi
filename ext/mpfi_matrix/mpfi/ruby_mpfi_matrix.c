@@ -273,10 +273,10 @@ static VALUE r_mpfi_row_vector_initialize (VALUE self, VALUE arg){
 static VALUE r_mpfi_matrix_marshal_dump(VALUE self)
 {
   MPFIMatrix *ptr;
-  r_mpfi_get_matrix_struct(ptr, self);
   int i;
   char *tmp_str;
   VALUE ret_ary;
+  r_mpfi_get_matrix_struct(ptr, self);
   ret_ary = rb_ary_new();
   rb_ary_push(ret_ary, INT2FIX(ptr->row));
   rb_ary_push(ret_ary, INT2FIX(ptr->column));
@@ -293,15 +293,15 @@ static VALUE r_mpfi_matrix_marshal_dump(VALUE self)
 static VALUE r_mpfi_matrix_marshal_load(VALUE self, VALUE dump_ary)
 {
   MPFIMatrix *ptr;
+  int i;
+  char *dump;
+  VALUE dump_element;
   r_mpfi_get_matrix_struct(ptr, self);
 
   ptr->row = NUM2INT(rb_ary_entry(dump_ary, 0));
   ptr->column = NUM2INT(rb_ary_entry(dump_ary, 1));
   ptr->size = ptr->row * ptr->column;
   ptr->data = ALLOC_N(MPFI, ptr->size);
-  int i;
-  char *dump;
-  VALUE dump_element;
 
   for(i = 0; i < ptr->size; i++){
     dump_element = rb_ary_entry(dump_ary, i + 2);
@@ -336,8 +336,9 @@ static VALUE r_mpfi_matrix_row_size (VALUE self){
 /* Return element at _arg_.*/
 static VALUE r_mpfi_matrix_at (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self;
+  int i;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  int i = NUM2INT(arg);
+  i = NUM2INT(arg);
   if (i < ptr_self->size) {
     VALUE ret;
     MPFI *ptr_ret;
@@ -352,8 +353,10 @@ static VALUE r_mpfi_matrix_at (VALUE self, VALUE arg){
 /* Return element with _row_ and _column_.*/
 static VALUE r_mpfi_matrix_element (VALUE self, VALUE row, VALUE column){
   MPFIMatrix *ptr_self;
+  int i, j;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  int i = NUM2INT(row), j = NUM2INT(column);
+  i = NUM2INT(row);
+  j = NUM2INT(column);
   if (i < ptr_self->row && j < ptr_self->column) {
     VALUE ret;
     MPFI*ptr_ret;
@@ -368,8 +371,10 @@ static VALUE r_mpfi_matrix_element (VALUE self, VALUE row, VALUE column){
 /* Set _robj_ to element of which row is _row_ and column is _column_. */
 static VALUE r_mpfi_matrix_set_element (VALUE self, VALUE row, VALUE column, VALUE robj){
   MPFIMatrix *ptr_self;
+  int i, j;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  int i = NUM2INT(row), j = NUM2INT(column);
+  i = NUM2INT(row);
+  j = NUM2INT(column);
   if (i < ptr_self->row && j < ptr_self->column) {
     r_mpfi_set_robj(ptr_self->data + i + j * ptr_self->row, robj);
   }
@@ -379,9 +384,10 @@ static VALUE r_mpfi_matrix_set_element (VALUE self, VALUE row, VALUE column, VAL
 /* Evaluate block with each element of matrix. */
 static VALUE r_mpfi_matrix_each_element (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil;
+  VALUE ret;
   int i, j;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  ret = Qnil;
   for (i = 0; i < ptr_self->row; i++) {
     for (j = 0; j < ptr_self->column; j++) {
       volatile VALUE arg = r_mpfi_make_new_fi_obj(ptr_self->data + i + j * ptr_self->row);
@@ -394,9 +400,10 @@ static VALUE r_mpfi_matrix_each_element (VALUE self){
 /* Evaluate block with each element and its index. */
 static VALUE r_mpfi_matrix_each_element_with_index (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil, tmp_i;
+  VALUE ret, tmp_i;
   int i, j;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  ret = Qnil;
   for (i = 0; i < ptr_self->row; i++) {
     tmp_i = INT2NUM(i);
     for (j = 0; j < ptr_self->column; j++) {
@@ -410,8 +417,8 @@ static VALUE r_mpfi_matrix_each_element_with_index (VALUE self){
 /* Return one dimensinal array which has strings converted elements to. */
 static VALUE r_mpfi_matrix_str_ary_for_inspect(VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   char *tmp_str;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret_val[ptr_self->size];
   int i;
   for (i = 0; i < ptr_self->size; i++) {
@@ -428,10 +435,10 @@ static VALUE r_mpfi_matrix_str_ary_for_inspect(VALUE self){
 /* Return two dimensinal array which has strings converted elements to. */
 static VALUE r_mpfi_matrix_str_ary_for_inspect2(VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   char *tmp_str;
-  VALUE ary[ptr_self->row];
   int i, j;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  VALUE ary[ptr_self->row];
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -450,10 +457,10 @@ static VALUE r_mpfi_matrix_str_ary_for_inspect2(VALUE self){
 
 static VALUE r_mpfi_matrix_to_str_ary(VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   char *tmp_str1, *tmp_str2;
-  VALUE ary[ptr_self->row];
   int i, j;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  VALUE ary[ptr_self->row];
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -475,11 +482,11 @@ static VALUE r_mpfi_matrix_to_str_ary(VALUE self){
 
 static VALUE r_mpfi_matrix_to_strf_ary(VALUE self, VALUE format_str){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  char *tmp_str1, *tmp_str2;
-  char *format = StringValuePtr(format_str);
-  VALUE ary[ptr_self->row];
+  char *tmp_str1, *tmp_str2, *format;
   int i, j;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  format = StringValuePtr(format_str);
+  VALUE ary[ptr_self->row];
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -501,9 +508,9 @@ static VALUE r_mpfi_matrix_to_strf_ary(VALUE self, VALUE format_str){
 
 static VALUE r_mpfi_matrix_to_array(VALUE self){
   MPFIMatrix *ptr_self;
+  int i;
   r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret_val[ptr_self->size];
-  int i;
   for (i = 0; i < ptr_self->size; i++) {
     ret_val[i] = r_mpfi_make_new_fi_obj(ptr_self->data + i);
   }
@@ -512,9 +519,9 @@ static VALUE r_mpfi_matrix_to_array(VALUE self){
 
 static VALUE r_mpfi_matrix_to_array2(VALUE self){
   MPFIMatrix *ptr_self;
+  int i, j;
   r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ary[ptr_self->row];
-  int i, j;
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -528,9 +535,10 @@ static VALUE r_mpfi_matrix_to_array2(VALUE self){
 
 static VALUE r_mpfi_matrix_row (VALUE self, VALUE arg) {
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  int num = NUM2INT(arg);
+  int num;
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  num = NUM2INT(arg);
   if(num < ptr_self->row){
     r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, 1, ptr_self->column);
     mpfi_matrix_row(ptr_ret, ptr_self, num);
@@ -542,9 +550,10 @@ static VALUE r_mpfi_matrix_row (VALUE self, VALUE arg) {
 
 static VALUE r_mpfi_matrix_column (VALUE self, VALUE arg) {
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  int num = NUM2INT(arg);
+  int num;
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  num = NUM2INT(arg);
   if(num < ptr_self->column){
     r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, 1);
     mpfi_matrix_column(ptr_ret, ptr_self, num);
@@ -557,8 +566,8 @@ static VALUE r_mpfi_matrix_column (VALUE self, VALUE arg) {
 /* Return transposed matrix which is new object. */
 static VALUE r_mpfi_matrix_transpose (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->column, ptr_self->row);
   mpfi_matrix_transpose(ptr_ret, ptr_self);
   return ret;
@@ -567,6 +576,7 @@ static VALUE r_mpfi_matrix_transpose (VALUE self){
 /* Transpose self. This method is destroying method. */
 static VALUE r_mpfi_matrix_transpose2 (VALUE self){
   MPFIMatrix *ptr_self, tmp;
+  int i;
   r_mpfi_get_matrix_struct(ptr_self, self);
   if (ptr_self->column > 1 && ptr_self->row > 1) {
     mpfi_matrix_init(&tmp, ptr_self->column, ptr_self->row);
@@ -574,7 +584,6 @@ static VALUE r_mpfi_matrix_transpose2 (VALUE self){
     mpfi_matrix_set(ptr_self, &tmp);
     mpfi_matrix_clear(&tmp);
   }
-  int i;
   i = ptr_self->column;
   ptr_self->column = ptr_self->row;
   ptr_self->row = i;
@@ -584,8 +593,8 @@ static VALUE r_mpfi_matrix_transpose2 (VALUE self){
 /* Return transposed matrix which is new object. */
 static VALUE r_mpfi_matrix_neg (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   mpfi_matrix_neg(ptr_ret, ptr_self);
   return ret;
@@ -597,19 +606,18 @@ static VALUE r_mpfi_matrix_equal_p (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE ret = Qtrue;
   if (mpfi_matrix_equal_p(ptr_self, ptr_other) != 0) {
-    ret = Qnil;
+    return Qnil;
   }
-  return ret;
+  return Qtrue;
 }
 
 /* Return _self_ + _other_. */
 static VALUE r_mpfi_matrix_add (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE ret;
   if (ptr_self->column == ptr_other->column && ptr_self->row == ptr_other->row) {
     r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
     mpfi_matrix_add(ptr_ret, ptr_self, ptr_other);
@@ -622,8 +630,8 @@ static VALUE r_mpfi_matrix_add (VALUE self, VALUE other){
 /* Return _self_ + _other_ which is MPFI::Matrix. */
 static VALUE r_mpfi_matrix_add2 (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_make_matrix_struct(ret, ptr_ret);
 
   if(RTEST(rb_funcall(__mpfi_matrix_class__, eqq, 1, other))){
@@ -653,9 +661,9 @@ static VALUE r_mpfi_matrix_add2 (VALUE self, VALUE other){
 /* Return _self_ - _other_. */
 static VALUE r_mpfi_matrix_sub (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_matrix_struct(ret, ptr_ret);
   if (ptr_self->column == ptr_other->column && ptr_self->row == ptr_other->row) {
     r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
@@ -669,8 +677,8 @@ static VALUE r_mpfi_matrix_sub (VALUE self, VALUE other){
 /* Return _self_ - _other_ which is MPFI::Matrix. */
 static VALUE r_mpfi_matrix_sub2 (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_make_matrix_struct(ret, ptr_ret);
 
   if(RTEST(rb_funcall(__mpfi_matrix_class__, eqq, 1, other))){
@@ -699,10 +707,10 @@ static VALUE r_mpfi_matrix_sub2 (VALUE self, VALUE other){
 
 static VALUE r_mpfi_matrix_vector_inner_product (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_arg;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  r_mpfi_get_matrix_struct(ptr_arg, arg);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_get_matrix_struct(ptr_arg, arg);
   r_mpfi_make_struct_init(ret, ptr_ret);
   if(ptr_self->size == ptr_arg->size){
     mpfi_matrix_inner_product(ptr_ret, ptr_self, ptr_arg);
@@ -715,9 +723,9 @@ static VALUE r_mpfi_matrix_vector_inner_product (VALUE self, VALUE arg){
 /* Return _self_ * _other_. */
 static VALUE r_mpfi_matrix_mul_matrix (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_matrix_struct(ret, ptr_ret);
   if (ptr_self->column == ptr_other->row) {
     if((ptr_other->column == 1) && (ptr_self->row == 1)){
@@ -735,8 +743,8 @@ static VALUE r_mpfi_matrix_mul_matrix (VALUE self, VALUE other){
 /* Return _self_ * _other_ which is MPFI::Matrix. */
 static VALUE r_mpfi_matrix_mul_matrix2 (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_make_matrix_struct(ret, ptr_ret);
 
   if(RTEST(rb_funcall(__mpfi_matrix_class__, eqq, 1, other))){
@@ -767,8 +775,8 @@ static VALUE r_mpfi_matrix_mul_matrix2 (VALUE self, VALUE other){
 static VALUE r_mpfi_matrix_mul_scalar (VALUE self, VALUE scalar){
   MPFIMatrix *ptr_self, *ptr_ret;
   MPFI *ptr_scalar;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(RTEST(rb_funcall(r_mpfi_class, eqq, 1, scalar))){
     r_mpfi_get_struct(ptr_scalar, scalar);
@@ -785,8 +793,8 @@ static VALUE r_mpfi_matrix_mul_scalar (VALUE self, VALUE scalar){
 static VALUE r_mpfi_matrix_div_scalar (VALUE self, VALUE scalar){
   MPFIMatrix *ptr_self, *ptr_ret;
   MPFI *ptr_scalar;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(RTEST(rb_funcall(r_mpfi_class, eqq, 1, scalar))){
     r_mpfi_get_struct(ptr_scalar, scalar);
@@ -803,8 +811,9 @@ static VALUE r_mpfi_matrix_div_scalar (VALUE self, VALUE scalar){
 
 static VALUE r_mpfi_matrix_include_p (VALUE self, VALUE other){
   MPFIMatrix *ptr_self;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil;
+  ret = Qnil;
   if(RTEST(rb_funcall(r_mpfi_matrix, eqq, 1, other))){
     MPFIMatrix *ptr_other;
     r_mpfi_get_matrix_struct(ptr_other, other);
@@ -825,8 +834,9 @@ static VALUE r_mpfi_matrix_include_p (VALUE self, VALUE other){
 
 static VALUE r_mpfi_matrix_strictly_include_p (VALUE self, VALUE other){
   MPFIMatrix *ptr_self;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil;
+  ret = Qnil;
   if(RTEST(rb_funcall(r_mpfi_matrix, eqq, 1, other))){
     MPFIMatrix *ptr_other;
     r_mpfi_get_matrix_struct(ptr_other, other);
@@ -851,9 +861,9 @@ static VALUE r_mpfi_matrix_bounded_p (VALUE self) {
 
 static VALUE r_mpfi_matrix_mid (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE val_ret;
   MPFRMatrix *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfr_matrix_suitable_matrix_init(&val_ret, &ptr_ret, ptr_self->row, ptr_self->column);
   mpfi_matrix_mid(ptr_ret, ptr_self);
   return val_ret;
@@ -861,8 +871,8 @@ static VALUE r_mpfi_matrix_mid (VALUE self){
 
 static VALUE r_mpfi_matrix_mid_interval (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE val_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init(&val_ret, &ptr_ret, ptr_self->row, ptr_self->column);
   mpfi_matrix_mid_interval(ptr_ret, ptr_self);
   return val_ret;
@@ -870,9 +880,9 @@ static VALUE r_mpfi_matrix_mid_interval (VALUE self){
 
 static VALUE r_mpfi_matrix_intersect (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other, *ptr_ret;
+  VALUE val_ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE val_ret;
   r_mpfi_matrix_suitable_matrix_init(&val_ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(mpfi_matrix_intersect(ptr_ret, ptr_self, ptr_other) == 0){
     return val_ret;
@@ -883,9 +893,9 @@ static VALUE r_mpfi_matrix_intersect (VALUE self, VALUE other){
 
 static VALUE r_mpfi_matrix_union (VALUE self, VALUE other){
   MPFIMatrix *ptr_self, *ptr_other, *ptr_ret;
+  VALUE val_ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_other, other);
-  VALUE val_ret;
   r_mpfi_matrix_suitable_matrix_init(&val_ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(mpfi_matrix_union(ptr_ret, ptr_self, ptr_other) == 0){
     return val_ret;
@@ -897,9 +907,9 @@ static VALUE r_mpfi_matrix_union (VALUE self, VALUE other){
 
 static VALUE r_mpfi_matrix_max_diam_abs (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   MPFR *ptr_ret;
   VALUE ret_val;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfr_make_struct_init(ret_val, ptr_ret);
   mpfi_matrix_max_diam_abs(ptr_ret, ptr_self);
   return ret_val;
@@ -916,13 +926,13 @@ static VALUE r_mpfi_square_matrix_dim (VALUE self){
 static VALUE r_mpfi_square_matrix_lu_decomp (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret_l, *ptr_ret_u;
   VALUE ret_l, ret_u;
+  int i, j;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret_l, &ptr_ret_l, ptr_self->row, ptr_self->column);
   r_mpfi_matrix_suitable_matrix_init (&ret_u, &ptr_ret_u, ptr_self->row, ptr_self->column);
   VALUE ret_indx[ptr_self->row];
   int indx[ptr_self->row];
   if(mpfi_square_matrix_lu_decomp (ptr_ret_u, indx, ptr_self) >= 0){
-    int i, j;
     for(i = 1; i < ptr_ret_u->row; i++){
       for(j = 0; j < i; j++){
 	mpfi_set(mpfi_matrix_get_element(ptr_ret_l, i, j), mpfi_matrix_get_element(ptr_ret_u, i, j));
@@ -948,9 +958,9 @@ static VALUE r_mpfi_square_matrix_lu_decomp (VALUE self){
 
 static VALUE r_mpfi_square_matrix_determinant (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   MPFI *ptr_ret;
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_make_struct_init(ret, ptr_ret);
   mpfi_square_matrix_determinant(ptr_ret, ptr_self);
   return ret;
@@ -958,8 +968,8 @@ static VALUE r_mpfi_square_matrix_determinant (VALUE self){
 
 static VALUE r_mpfi_square_matrix_qr_decomp (VALUE self){
   MPFIMatrix *ptr_self, *ptr_q, *ptr_r;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE q, r;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&q, &ptr_q, ptr_self->row, ptr_self->column);
   r_mpfi_matrix_suitable_matrix_init (&r, &ptr_r, ptr_self->column, ptr_self->column);
   mpfi_square_matrix_qr_decomp(ptr_q, ptr_r, ptr_self);
@@ -986,9 +996,9 @@ static VALUE r_mpfi_vector_dim (VALUE self){
 /* Take matrix for vector and return length of the vector. */
 static VALUE r_mpfi_vector_abs (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_make_struct_init(ret, ptr_ret);
   mpfi_matrix_vector_norm(ptr_ret, ptr_self);
   return ret;
@@ -997,8 +1007,9 @@ static VALUE r_mpfi_vector_abs (VALUE self){
 /* Return element at _arg_.*/
 static VALUE r_mpfi_vector_element (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self;
+  int i;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  int i = NUM2INT(arg);
+  i = NUM2INT(arg);
   if (i < ptr_self->size) {
     VALUE ret;
     MPFI *ptr_ret;
@@ -1013,8 +1024,9 @@ static VALUE r_mpfi_vector_element (VALUE self, VALUE arg){
 /* Set _robj_ to _arg_ th element. */
 static VALUE r_mpfi_vector_set_element (VALUE self, VALUE arg, VALUE robj){
   MPFIMatrix *ptr_self;
+  int i;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  int i = NUM2INT(arg);
+  i = NUM2INT(arg);
   if (i < ptr_self->size) {
     r_mpfi_set_robj(ptr_self->data + i, robj);
   }
@@ -1024,11 +1036,12 @@ static VALUE r_mpfi_vector_set_element (VALUE self, VALUE arg, VALUE robj){
 /* Evaluate block with each element of vector. */
 static VALUE r_mpfi_vector_each_element (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil, tmp;
+  VALUE ret, tmp;
   MPFI *tmp_ptr;
-  r_mpfi_make_struct_init(tmp, tmp_ptr);
   int i;
+  ret = Qnil;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_make_struct_init(tmp, tmp_ptr);
   for (i = 0; i < ptr_self->size; i++) {
     mpfi_set(tmp_ptr, ptr_self->data + i);
     ret = rb_yield(tmp);
@@ -1039,11 +1052,12 @@ static VALUE r_mpfi_vector_each_element (VALUE self){
 /* Evaluate block with each element and its index. */
 static VALUE r_mpfi_vector_each_element_with_index (VALUE self){
   MPFIMatrix *ptr_self;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = Qnil, tmp;
+  VALUE ret, tmp;
   MPFI *tmp_ptr;
-  r_mpfi_make_struct_init(tmp, tmp_ptr);
   int i;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_make_struct_init(tmp, tmp_ptr);
+  ret = Qnil;
   for (i = 0; i < ptr_self->size; i++) {
     mpfi_set(tmp_ptr, ptr_self->data + i);
     ret = rb_yield(rb_ary_new3(2, tmp, INT2NUM(i)));
@@ -1053,10 +1067,10 @@ static VALUE r_mpfi_vector_each_element_with_index (VALUE self){
 
 static VALUE r_mpfi_vector_inner_product (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_arg;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  r_mpfi_get_matrix_struct(ptr_arg, arg);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_get_matrix_struct(ptr_arg, arg);
   r_mpfi_make_struct_init(ret, ptr_ret);
   if(ptr_self->size == ptr_arg->size){
     mpfi_matrix_inner_product(ptr_ret, ptr_self, ptr_arg);
@@ -1068,10 +1082,10 @@ static VALUE r_mpfi_vector_inner_product (VALUE self, VALUE arg){
 
 static VALUE r_mpfi_vector_distance_from (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_arg;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  r_mpfi_get_matrix_struct(ptr_arg, arg);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_get_matrix_struct(ptr_arg, arg);
   r_mpfi_make_struct_init(ret, ptr_ret);
   if(ptr_self->size == ptr_arg->size){
     mpfi_matrix_vector_distance(ptr_ret, ptr_self, ptr_arg);
@@ -1083,10 +1097,10 @@ static VALUE r_mpfi_vector_distance_from (VALUE self, VALUE arg){
 
 static VALUE r_mpfi_vector_distance_center_pts (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_arg;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  r_mpfi_get_matrix_struct(ptr_arg, arg);
   VALUE ret;
   MPFR *ptr_ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  r_mpfi_get_matrix_struct(ptr_arg, arg);
   r_mpfr_make_struct_init(ret, ptr_ret);
   if(ptr_self->size == ptr_arg->size){
     mpfi_matrix_vector_distance_center_pts(ptr_ret, ptr_self, ptr_arg);
@@ -1098,9 +1112,9 @@ static VALUE r_mpfi_vector_distance_center_pts (VALUE self, VALUE arg){
 
 static VALUE r_mpfi_vector_midpoint (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_arg, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_get_matrix_struct(ptr_arg, arg);
-  VALUE ret;
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   mpfi_vector_midpoint(ptr_ret, ptr_self, ptr_arg);
   return ret;
@@ -1108,8 +1122,8 @@ static VALUE r_mpfi_vector_midpoint (VALUE self, VALUE arg){
 
 static VALUE r_mpfi_vector_normalize (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(mpfi_vector_normalize(ptr_ret, ptr_self) == 0){
     return ret;
@@ -1121,8 +1135,9 @@ static VALUE r_mpfi_vector_normalize (VALUE self){
 /* Return normalized vector of _self_. This method is destroy method. */
 static VALUE r_mpfi_vector_normalize2 (VALUE self){
   MPFIMatrix *ptr_self, tmp;
+  VALUE ret;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret = self;
+  ret = self;
   mpfi_matrix_init(&tmp, ptr_self->column, ptr_self->row);
   if(mpfi_vector_normalize(&tmp, ptr_self) == 0){
     mpfi_matrix_set(ptr_self, &tmp);
@@ -1135,9 +1150,10 @@ static VALUE r_mpfi_vector_normalize2 (VALUE self){
 
 static VALUE r_mpfi_vector_set_length (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret, returned_value = Qnil;
+  VALUE ret, returned_value;
   MPFR *ptr_l;
+  returned_value = Qnil;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(RTEST(rb_funcall(r_mpfr_class, eqq, 1, arg))){
     r_mpfr_get_struct(ptr_l, arg);
@@ -1157,9 +1173,10 @@ static VALUE r_mpfi_vector_set_length (VALUE self, VALUE arg){
 
 static VALUE r_mpfi_vector_set_length2 (VALUE self, VALUE arg){
   MPFIMatrix *ptr_self, *ptr_ret;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret, returned_value = Qnil;
+  VALUE ret, returned_value;
   MPFR *ptr_l;
+  returned_value = Qnil;
+  r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr_self->row, ptr_self->column);
   if(RTEST(rb_funcall(r_mpfi_class, eqq, 1, arg))){
     r_mpfr_get_struct(ptr_l, arg);
@@ -1180,19 +1197,17 @@ static VALUE r_mpfi_vector_set_length2 (VALUE self, VALUE arg){
 }
 
 
-
 static VALUE r_mpfr_matrix_to_fi_matrix(VALUE self){
   MPFRMatrix *ptr;
-  r_mpfr_get_matrix_struct(ptr, self);
   VALUE ret;
   MPFIMatrix *ptr_ret;
+  r_mpfr_get_matrix_struct(ptr, self);
   r_mpfi_matrix_suitable_matrix_init (&ret, &ptr_ret, ptr->row, ptr->column);
   mpfi_matrix_from_mpfr_matrix(ptr_ret, ptr);
   return ret;
 }
 
 void Init_matrix(){
-
   /* Initialization of MPFI::Matrix, MPFI::SquareMatrix, MPFI::ColumnVector and MPFI::RowVector */
   VALUE tmp_r_mpfi_class = rb_define_class("MPFI", rb_cNumeric);
   r_mpfi_matrix = rb_define_class_under(tmp_r_mpfi_class, "Matrix", rb_cObject);
@@ -1316,6 +1331,4 @@ void Init_matrix(){
   eqq = rb_intern("===");
   __mpfr_matrix_class__ = rb_eval_string("MPFR::Matrix");
   __mpfi_matrix_class__ = rb_eval_string("MPFI::Matrix");
-
 }
-

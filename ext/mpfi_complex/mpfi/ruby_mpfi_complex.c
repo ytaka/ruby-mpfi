@@ -66,9 +66,9 @@ static VALUE r_mpfi_complex_initialize_copy (VALUE self, VALUE other){
 /* Return real part. */
 static VALUE r_mpfi_complex_real (VALUE self){
   MPFIComplex *ptr_self;
-  r_mpfi_get_complex_struct(ptr_self, self);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_make_struct_init(ret, ptr_ret);
   mpfi_set(ptr_ret, ptr_self->re);
   return ret;
@@ -77,9 +77,9 @@ static VALUE r_mpfi_complex_real (VALUE self){
 /* Return imaginary part. */
 static VALUE r_mpfi_complex_imaginary (VALUE self){
   MPFIComplex *ptr_self;
-  r_mpfi_get_complex_struct(ptr_self, self);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_make_struct_init(ret, ptr_ret);
   mpfi_set(ptr_ret, ptr_self->im);
   return ret;
@@ -88,9 +88,9 @@ static VALUE r_mpfi_complex_imaginary (VALUE self){
 /* If _p1_ is 0, return real part. If _p1_ is 1, return imaginary part. */
 static VALUE r_mpfi_complex_element (VALUE self, VALUE arg){
   MPFIComplex *ptr_self;
-  r_mpfi_get_complex_struct(ptr_self, self);
   VALUE ret;
   MPFI *ptr_ret;
+  r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_make_struct_init(ret, ptr_ret);
   switch(NUM2INT(arg)){
   case 0:
@@ -109,8 +109,8 @@ static VALUE r_mpfi_complex_element (VALUE self, VALUE arg){
 /* Return conjugate complex number. */
 static VALUE r_mpfi_complex_conjugate (VALUE self){
   MPFIComplex *ptr_self, *ptr_ret;
-  r_mpfi_get_complex_struct(ptr_self, self);
   VALUE ret;
+  r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_make_complex_struct_init(ret, ptr_ret);
   mpfi_complex_conjugate(ptr_ret, ptr_self);
   return ret;
@@ -130,15 +130,16 @@ static VALUE r_mpfi_complex_conjugate (VALUE self){
 /* String for inspect. */
 static VALUE r_mpfi_complex_inspect(VALUE self){
   MPFIComplex *ptr_s;
-  r_mpfi_get_complex_struct(ptr_s, self);
   char *ret_str;
+  VALUE ret_val;
+  r_mpfi_get_complex_struct(ptr_s, self);
   if (!mpfr_asprintf(&ret_str, "#<MPFI:%lx,['%.Re %.Re', '%.Re %.Re'], [%d, %d]>",
 		     NUM2LONG(rb_funcall(self, object_id, 0)), r_mpfi_left_ptr(ptr_s->re),
 		     r_mpfi_right_ptr(ptr_s->re), r_mpfi_left_ptr(ptr_s->im), r_mpfi_right_ptr(ptr_s->im),
 		     mpfi_get_prec(ptr_s->re), mpfi_get_prec(ptr_s->im))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
-  VALUE ret_val = rb_str_new2(ret_str);
+  ret_val = rb_str_new2(ret_str);
   mpfr_free_str(ret_str);
   return ret_val;
 }
@@ -146,9 +147,10 @@ static VALUE r_mpfi_complex_inspect(VALUE self){
 /* Return array including strings which the elements is converted to by _p1_. */
 static VALUE r_mpfi_complex_str_ary(VALUE self, VALUE format_str){
   MPFIComplex *ptr_self;
-  r_mpfi_get_complex_struct(ptr_self, self);
-  char *format = StringValuePtr(format_str), *tmp_str;
+  char *format, *tmp_str;
   VALUE ret_val[2];
+  r_mpfi_get_complex_struct(ptr_self, self);
+  format = StringValuePtr(format_str);
   gmp_asprintf(&tmp_str, format, ptr_self->re);
   ret_val[0] = rb_str_new2(tmp_str);
   free(tmp_str);
@@ -161,9 +163,9 @@ static VALUE r_mpfi_complex_str_ary(VALUE self, VALUE format_str){
 /* Return _self_ + _p1_.*/
 static VALUE r_mpfi_complex_add (VALUE self, VALUE other){
   MPFIComplex *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_get_complex_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_complex_struct_init(ret, ptr_ret);
   mpfi_complex_add(ptr_ret, ptr_self, ptr_other);
   return ret;
@@ -172,9 +174,9 @@ static VALUE r_mpfi_complex_add (VALUE self, VALUE other){
 /* Return _self_ - _p1_.*/
 static VALUE r_mpfi_complex_sub (VALUE self, VALUE other){
   MPFIComplex *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_get_complex_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_complex_struct_init(ret, ptr_ret);
   mpfi_complex_sub(ptr_ret, ptr_self, ptr_other);
   return ret;
@@ -183,9 +185,9 @@ static VALUE r_mpfi_complex_sub (VALUE self, VALUE other){
 /* Return _self_ * _p1_.*/
 static VALUE r_mpfi_complex_mul (VALUE self, VALUE other){
   MPFIComplex *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_get_complex_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_complex_struct_init(ret, ptr_ret);
   mpfi_complex_mul(ptr_ret, ptr_self, ptr_other);
   return ret;
@@ -194,9 +196,9 @@ static VALUE r_mpfi_complex_mul (VALUE self, VALUE other){
 /* Return _self_ / _p1_.*/
 static VALUE r_mpfi_complex_div (VALUE self, VALUE other){
   MPFIComplex *ptr_self, *ptr_other, *ptr_ret;
+  VALUE ret;
   r_mpfi_get_complex_struct(ptr_self, self);
   r_mpfi_get_complex_struct(ptr_other, other);
-  VALUE ret;
   r_mpfi_make_complex_struct_init(ret, ptr_ret);
   mpfi_complex_div(ptr_ret, ptr_self, ptr_other);
   return ret;

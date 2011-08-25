@@ -1,12 +1,12 @@
 #include "ruby_mpfi_matrix.h"
 
 void mpfi_matrix_init(MPFIMatrix *mat, int row, int column){
+  int i;
   mat->row = row;
   mat->column = column;
   mat->size = row * column;
   /* mat->data = (MPFI *)malloc(sizeof(MPFI) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  int i;
   for(i = 0; i < mat->size; i++){
     mpfi_init(mat->data + i);
   }
@@ -305,8 +305,8 @@ int mpfi_matrix_union(MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y){
 
 void mpfi_matrix_inner_product(MPFI *pr, MPFIMatrix *x, MPFIMatrix *y){
   MPFI *tmp;
-  r_mpfi_temp_alloc_init(tmp);
   int i;
+  r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(pr, 0);
   for(i = 0; i < x->size; i++){
     mpfi_mul(tmp, x->data + i, y->data + i);
@@ -317,8 +317,8 @@ void mpfi_matrix_inner_product(MPFI *pr, MPFIMatrix *x, MPFIMatrix *y){
 
 void mpfi_matrix_vector_distance(MPFI *distance, MPFIMatrix *x, MPFIMatrix *y){
   MPFI *tmp;
-  r_mpfi_temp_alloc_init(tmp);
   int i;
+  r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(distance, 0);
   for(i = 0; i < x->size; i++){
     mpfi_sub(tmp, x->data + i, y->data + i);
@@ -344,8 +344,8 @@ void mpfi_matrix_vector_distance_center_pts(MPFR *distance, MPFIMatrix *x, MPFIM
 
 void mpfi_matrix_vector_norm(MPFI *norm, MPFIMatrix *x){
   MPFI *tmp;
-  r_mpfi_temp_alloc_init(tmp);
   int i;
+  r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(norm, 0);
   for(i = 0; i < x->size; i++){
     mpfi_mul(tmp, x->data + i, x->data + i);
@@ -357,9 +357,9 @@ void mpfi_matrix_vector_norm(MPFI *norm, MPFIMatrix *x){
 
 void mpfi_matrix_max_norm(MPFI *norm, MPFIMatrix *x){
   MPFI *tmp, *abs;
+  int i;
   r_mpfi_temp_alloc_init(tmp);
   r_mpfi_temp_alloc_init(abs);
-  int i;
   mpfi_set_si(norm, 0);
   for(i = 0; i < x->size; i++){
     mpfi_abs(abs, x->data + i);
@@ -395,24 +395,24 @@ void mpfi_matrix_max_diam_abs(MPFR *diam, MPFIMatrix *x){
 /* ------------------- vector --------------------- */
 
 void mpfi_col_vector_init(MPFIMatrix *mat, int row){
+  int i;
   mat->row = row;
   mat->column = 1;
   mat->size = row;
   /* mat->data = (MPFI *)malloc(sizeof(MPF) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  int i;
   for(i = 0; i < mat->size; i++){
     mpfi_init(mat->data + i);
   }
 }
 
 void mpfi_row_vector_init(MPFIMatrix *mat, int column){
+  int i;
   mat->row = 1;
   mat->column = column;
   mat->size = column;
   /* mat->data = (MPFI *)malloc(sizeof(MPF) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  int i;
   for(i = 0; i < mat->size; i++){
     mpfi_init(mat->data + i);
   }
@@ -421,12 +421,12 @@ void mpfi_row_vector_init(MPFIMatrix *mat, int column){
 /* If length of MPFIMatrix *x is zero, return 1. Otherwise return 0. */
 int mpfi_vector_normalize(MPFIMatrix *new, MPFIMatrix *x){
   MPFRMatrix *fr_mat;
+  MPFR *norm;
+  int i, j, index, ret = 0;
   r_mpfr_matrix_temp_alloc_init(fr_mat, x->row, x->column);
   mpfi_matrix_mid(fr_mat, x);
-  MPFR *norm;
   r_mpfr_temp_alloc_init(norm);
   mpfr_matrix_vector_norm(norm, fr_mat);
-  int i, j, index, ret = 0;
   if(mpfr_cmp_ui(norm, 0) > 0){
     for(j = 0; j < x->column; j++){
       index = j * x->row;
@@ -454,11 +454,11 @@ void mpfi_vector_midpoint(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
 int mpfi_vector_set_length(MPFIMatrix *new, MPFIMatrix *x, MPFR *length){
   MPFI *norm_i;
   MPFR *factor_r;
+  int i, j, index, ret = 0;
   r_mpfi_temp_alloc_init(norm_i);
   r_mpfr_temp_alloc_init(factor_r);
   mpfi_matrix_vector_norm(norm_i, x);
   mpfi_mid(factor_r, norm_i);
-  int i, j, index, ret = 0;
   if(mpfr_cmp_ui(factor_r, 0) > 0){
     mpfr_ui_div(factor_r, 1, factor_r, GMP_RNDN);
     mpfr_mul(factor_r, factor_r, length, GMP_RNDN);
@@ -629,8 +629,9 @@ void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
     mpfi_3d_square_matrix_determinant(det, x);
   }else{
     MPFIMatrix *ptr_lu;
+    int *indx, i;
     r_mpfi_matrix_temp_alloc_init(ptr_lu, x->row, x->column);
-    int indx[x->row], i;
+    indx = (int *) malloc(sizeof(int) * x->row);
     if((i = mpfi_square_matrix_lu_decomp (ptr_lu, indx, x)) >= 0){
       if (i == 0) {
 	mpfi_set_si(det, 1);
@@ -644,22 +645,22 @@ void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
       mpfi_set_ui(det, 0);
     }
     r_mpfi_matrix_temp_free(ptr_lu);
+    free(indx);
   }
-
 }
 
 void mpfi_square_matrix_qr_decomp(MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x){
   MPFIMatrix *q_mat, *r_mat;
+  int size, i, j, k, ind1, ind2, ind3;
+  MPFIMatrix *ary;
+  MPFI *tmp;
   r_mpfi_matrix_temp_alloc_init(q_mat, q->row, q->column);
   r_mpfi_matrix_temp_alloc_init(r_mat, r->row, r->column);
 
-  int size = x->row;
-  MPFIMatrix *ary;
+  size = x->row;
   r_mpfi_matrix_temp_alloc_init(ary, size, size);
   mpfi_matrix_set(ary, x);
-  MPFI *tmp;
   r_mpfi_temp_alloc_init(tmp);
-  int i, j, k, ind1, ind2, ind3;
   for (i = 0; i < size; i++) {
     ind1 = i * size;
     ind2 = i + ind1;
@@ -707,5 +708,4 @@ void mpfi_square_matrix_identity(MPFIMatrix *id){
       }
     }
   }
-  
 }
