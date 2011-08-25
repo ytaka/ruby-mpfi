@@ -1,1 +1,3 @@
-RUBY_MPFI_VERSION = '0.0.6'
+class MPFI
+  VERSION = '0.0.6'
+end

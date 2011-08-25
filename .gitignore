@@ -1,0 +1,13 @@
+*.gem
+.bundle
+Gemfile.lock
+pkg/*
+*.o
+*.so
+*.log
+*~
+\#*\#
+ext/*/Makefile
+ext/*/*/Makefile
+doc
+.yardoc
