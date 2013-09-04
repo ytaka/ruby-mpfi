@@ -418,18 +418,19 @@ static VALUE r_mpfi_matrix_each_element_with_index (VALUE self){
 static VALUE r_mpfi_matrix_str_ary_for_inspect(VALUE self){
   MPFIMatrix *ptr_self;
   char *tmp_str;
-  r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret_val[ptr_self->size];
+  VALUE ret_ary;
   int i;
+  r_mpfi_get_matrix_struct(ptr_self, self);
+  ret_ary = rb_ary_new2(ptr_self->size);
   for (i = 0; i < ptr_self->size; i++) {
     if(!mpfr_asprintf(&tmp_str, "%.Re %.Re",
 		      r_mpfi_left_ptr((ptr_self->data + i)), r_mpfi_right_ptr(ptr_self->data + i))) {
       rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
     }
-    ret_val[i] = rb_str_new2(tmp_str);
+    rb_ary_store(ret_ary, i, rb_str_new2(tmp_str));
     mpfr_free_str(tmp_str);
   }
-  return rb_ary_new4(ptr_self->size, ret_val);
+  return ret_ary;
 }
 
 /* Return two dimensinal array which has strings converted elements to. */
@@ -437,8 +438,9 @@ static VALUE r_mpfi_matrix_str_ary_for_inspect2(VALUE self){
   MPFIMatrix *ptr_self;
   char *tmp_str;
   int i, j;
+  VALUE *ary, ret_ary;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ary[ptr_self->row];
+  ary = ALLOC_N(VALUE, ptr_self->row);
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -452,15 +454,18 @@ static VALUE r_mpfi_matrix_str_ary_for_inspect2(VALUE self){
       mpfr_free_str(tmp_str);
     }
   }
-  return rb_ary_new4(ptr_self->row, ary);
+  ret_ary = rb_ary_new4(ptr_self->row, ary);
+  free(ary);
+  return ret_ary;
 }
 
 static VALUE r_mpfi_matrix_to_str_ary(VALUE self){
   MPFIMatrix *ptr_self;
   char *tmp_str1, *tmp_str2;
   int i, j;
+  VALUE *ary, ret_ary;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ary[ptr_self->row];
+  ary = ALLOC_N(VALUE, ptr_self->row);
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -477,16 +482,19 @@ static VALUE r_mpfi_matrix_to_str_ary(VALUE self){
       mpfr_free_str(tmp_str2);
     }
   }
-  return rb_ary_new4(ptr_self->row, ary);
+  ret_ary = rb_ary_new4(ptr_self->row, ary);
+  free(ary);
+  return ret_ary;
 }
 
 static VALUE r_mpfi_matrix_to_strf_ary(VALUE self, VALUE format_str){
   MPFIMatrix *ptr_self;
   char *tmp_str1, *tmp_str2, *format;
   int i, j;
+  VALUE *ary, ret_ary;
   r_mpfi_get_matrix_struct(ptr_self, self);
   format = StringValuePtr(format_str);
-  VALUE ary[ptr_self->row];
+  ary = ALLOC_N(VALUE, ptr_self->row);
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -503,25 +511,29 @@ static VALUE r_mpfi_matrix_to_strf_ary(VALUE self, VALUE format_str){
       mpfr_free_str(tmp_str2);
     }
   }
-  return rb_ary_new4(ptr_self->row, ary);
+  ret_ary = rb_ary_new4(ptr_self->row, ary);
+  free(ary);
+  return ret_ary;
 }
 
 static VALUE r_mpfi_matrix_to_array(VALUE self){
   MPFIMatrix *ptr_self;
   int i;
+  VALUE ret_ary;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ret_val[ptr_self->size];
+  ret_ary = rb_ary_new2(ptr_self->size);
   for (i = 0; i < ptr_self->size; i++) {
-    ret_val[i] = r_mpfi_make_new_fi_obj(ptr_self->data + i);
+    rb_ary_store(ret_ary, i, r_mpfi_make_new_fi_obj(ptr_self->data + i));
   }
-  return rb_ary_new4(ptr_self->size, ret_val);
+  return ret_ary;
 }
 
 static VALUE r_mpfi_matrix_to_array2(VALUE self){
   MPFIMatrix *ptr_self;
   int i, j;
+  VALUE *ary, ret_ary;
   r_mpfi_get_matrix_struct(ptr_self, self);
-  VALUE ary[ptr_self->row];
+  ary = ALLOC_N(VALUE, ptr_self->row);
   for(i = 0; i < ptr_self->row; i++){
     ary[i] = rb_ary_new();
   }
@@ -530,7 +542,9 @@ static VALUE r_mpfi_matrix_to_array2(VALUE self){
       rb_ary_push(ary[j], r_mpfi_make_new_fi_obj(ptr_self->data + i + j));
     }
   }
-  return rb_ary_new4(ptr_self->row, ary);
+  ret_ary = rb_ary_new4(ptr_self->row, ary);
+  free(ary);
+  return ret_ary;
 }
 
 static VALUE r_mpfi_matrix_row (VALUE self, VALUE arg) {
@@ -925,14 +939,14 @@ static VALUE r_mpfi_square_matrix_dim (VALUE self){
 /* Return [matrix_l, matrix_r, indx]. */
 static VALUE r_mpfi_square_matrix_lu_decomp (VALUE self){
   MPFIMatrix *ptr_self, *ptr_ret_l, *ptr_ret_u;
-  VALUE ret_l, ret_u;
-  int i, j;
+  VALUE ret_l, ret_u, ret, ret_indx_ary;
+  int i, j, *indx;
   r_mpfi_get_matrix_struct(ptr_self, self);
   r_mpfi_matrix_suitable_matrix_init (&ret_l, &ptr_ret_l, ptr_self->row, ptr_self->column);
   r_mpfi_matrix_suitable_matrix_init (&ret_u, &ptr_ret_u, ptr_self->row, ptr_self->column);
-  VALUE ret_indx[ptr_self->row];
-  int indx[ptr_self->row];
+  indx = ALLOC_N(int, ptr_self->row);
   if(mpfi_square_matrix_lu_decomp (ptr_ret_u, indx, ptr_self) >= 0){
+    ret_indx_ary = rb_ary_new2(ptr_self->row);
     for(i = 1; i < ptr_ret_u->row; i++){
       for(j = 0; j < i; j++){
 	mpfi_set(mpfi_matrix_get_element(ptr_ret_l, i, j), mpfi_matrix_get_element(ptr_ret_u, i, j));
@@ -948,12 +962,14 @@ static VALUE r_mpfi_square_matrix_lu_decomp (VALUE self){
       }
     }
     for(i = 0; i < ptr_ret_u->row; i++){
-      ret_indx[i] = INT2NUM(indx[i]);
+      rb_ary_store(ret_indx_ary, i, INT2NUM(indx[i]));
     }
-    return rb_ary_new3(3, ret_l, ret_u, rb_ary_new4(ptr_ret_u->row, ret_indx));
-  }else{
-    return Qnil;
+    ret = rb_ary_new3(3, ret_l, ret_u, ret_indx_ary);
+  } else {
+    ret = Qnil;
   }
+  free(indx);
+  return ret;
 }
 
 static VALUE r_mpfi_square_matrix_determinant (VALUE self){

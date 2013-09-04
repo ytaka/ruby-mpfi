@@ -1131,18 +1131,22 @@ void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
 /* Return array having MPFI instances by subdividing. */
 static VALUE r_mpfi_subdivision (int argc, VALUE *argv, VALUE self)
 {
-  MPFI *ptr_self;
+  MPFI *ptr_self, **f;
   int i, num, prec;
+  VALUE *vf, ret;
   r_mpfi_get_struct(ptr_self, self);
   num = NUM2INT(argv[0]);
   prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
-  MPFI *f[num];
-  VALUE vf[num];
+  vf = ALLOC_N(VALUE, num);
+  f = ALLOC_N(MPFI*, num);
   for(i = 0; i < num; i++){
     r_mpfi_make_struct_init2(vf[i], f[i], prec);
   }
   r_mpfi_subdivision_func(num, f, ptr_self);
-  return rb_ary_new4(num, vf);
+  ret = rb_ary_new4(num, vf);
+  free(vf);
+  free(f);
+  return ret;
 }
 /* ------------------------------ Miscellaneous Interval Functions end ------------------------------ */
 
