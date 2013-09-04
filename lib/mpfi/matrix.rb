@@ -1,4 +1,6 @@
-require 'mpfi/matrix.so'
+require "mpfr/matrix"
+require "mpfi/matrix.so"
+# If we do not load "mpfr/matrix" before load of "mpfi/matrix.so", segmentation fault error raises.
 
 class MPFI
   class Matrix
