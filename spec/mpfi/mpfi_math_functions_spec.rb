@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require_relative "../spec_helper"
 
 describe MPFI, "when calculating mathematical functions" do
   it "should not raise error" do

@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require_relative "../spec_helper"
 
 # Time to add your specs!
 # http://rspec.info/

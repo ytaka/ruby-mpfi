@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require_relative "../spec_helper"
 
 #
 # 03/19/09 11:51:21

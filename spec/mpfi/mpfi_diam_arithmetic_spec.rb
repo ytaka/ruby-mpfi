@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require_relative "../spec_helper"
 
 describe MPFI, "when puting arithmetic operation" do
   before(:all) do

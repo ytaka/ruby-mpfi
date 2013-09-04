@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require_relative "../spec_helper"
 
 describe MPFI::ColumnVector, "when creating MPFI::ColumnVector method" do
   it "should return MPFI::ColumnVector" do

@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require_relative "../spec_helper"
 
 #
 # To test method +, -, / and *, we calculate these operator for MPFR and MPFI

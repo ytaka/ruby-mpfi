@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require_relative "../spec_helper"
 
 describe MPFI, "when converting to string" do
   it "should return string created by inspect" do

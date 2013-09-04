@@ -1,4 +1,4 @@
-require_relative 'spec_helper'
+require_relative "../spec_helper"
 
 #
 # The following is test for interval functions and endpoints. 

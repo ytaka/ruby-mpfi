@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/spec_helper.rb'
+require_relative "../spec_helper"
 
 describe MPFI::Matrix, "when an interval includes other" do
   before(:all) do
