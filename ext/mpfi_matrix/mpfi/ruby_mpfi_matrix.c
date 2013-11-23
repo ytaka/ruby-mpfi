@@ -389,6 +389,7 @@ static VALUE r_mpfi_matrix_each_element (VALUE self) {
   MPFIMatrix *ptr_self;
   VALUE ret;
   int i, j;
+  RETURN_ENUMERATOR(self, 0, NULL);
   r_mpfi_get_matrix_struct(ptr_self, self);
   ret = Qnil;
   for (i = 0; i < ptr_self->row; i++) {
@@ -405,6 +406,7 @@ static VALUE r_mpfi_matrix_each_element_with_index (VALUE self) {
   MPFIMatrix *ptr_self;
   VALUE ret, tmp_i;
   int i, j;
+  RETURN_ENUMERATOR(self, 0, NULL);
   r_mpfi_get_matrix_struct(ptr_self, self);
   ret = Qnil;
   for (i = 0; i < ptr_self->row; i++) {
@@ -1057,6 +1059,7 @@ static VALUE r_mpfi_vector_each_element (VALUE self) {
   MPFIMatrix *ptr_self;
   VALUE ret;
   int i;
+  RETURN_ENUMERATOR(self, 0, NULL);
   ret = Qnil;
   r_mpfi_get_matrix_struct(ptr_self, self);
   for (i = 0; i < ptr_self->size; i++) {
@@ -1071,6 +1074,7 @@ static VALUE r_mpfi_vector_each_element_with_index (VALUE self) {
   MPFIMatrix *ptr_self;
   VALUE ret;
   int i;
+  RETURN_ENUMERATOR(self, 0, NULL);
   r_mpfi_get_matrix_struct(ptr_self, self);
   ret = Qnil;
   for (i = 0; i < ptr_self->size; i++) {
