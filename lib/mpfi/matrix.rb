@@ -1,8 +1,9 @@
+require "mpfi"
 require "mpfr/matrix"
 require "mpfi/matrix.so"
 # If we do not load "mpfr/matrix" before load of "mpfi/matrix.so", segmentation fault error raises.
 
-class MPFI
+class MPFI < Numeric
   class Matrix
     def inspect
       tmp = str_ary_for_inspect2
@@ -64,7 +65,6 @@ class MPFI
       else
         self.new(a)
       end
-
     end
     
     # ary is two-dimensional Array.
@@ -155,7 +155,7 @@ class MPFI
       end
       ary.map! { |a| self.class.new(a) }
     end
-    
+
     def self.inner_product(a, b)
       a.inner_product(b)
     end
@@ -163,7 +163,6 @@ class MPFI
     def self.distance(a, b)
       a.distance_from(b)
     end
-
   end
 
   class ColumnVector
@@ -185,6 +184,4 @@ class MPFI
       end
     end
   end
-  
 end
-
