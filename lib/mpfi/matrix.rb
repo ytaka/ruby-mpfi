@@ -38,6 +38,70 @@ class MPFI < Numeric
       str_ary_for_inspect.join(delimiter)
     end
 
+    def each_subdivision(nums)
+      if block_given?
+        row_size = self.row_size
+        col_size = self.column_size
+        if (row_size != nums.size) || !(nums.all? { |col_nums| col_nums.size == col_size })
+          raise ArgumentError, "Invalid numbers to specify split"
+        end
+        dim = row_size * col_size
+        num_current = 0
+        elements = []
+        row_size.times do |r|
+          col_size.times do |c|
+            elements << self[r, c].subdivision(nums[r][c])
+          end
+        end
+        indices = Array.new(dim, 0)
+        args = Array.new(row_size) { Array.new(col_size) }
+        while num_current >= 0
+          while num_current < dim
+            row_num, col_num = num_current.divmod(col_size)
+            if args[row_num][col_num] = elements[num_current][indices[num_current]]
+              indices[num_current] += 1
+            else
+              indices[num_current] = 0
+              num_current -= 1
+              break
+            end
+            num_current += 1
+          end
+          if num_current == dim
+            yield(self.class.new(args))
+            num_current -= 1
+          end
+        end
+      else
+        to_enum(:each_subdivision, nums)
+      end
+    end
+
+    def each_subdivision_by_size(size, &block)
+      if block_given?
+        row_size = self.row_size
+        col_size = self.column_size
+        row_num, col_num = num.divmod(col_size)
+        nums = Array.new(row_size) { Array.new(col_size) }
+        row_size.times do |r|
+          col_size.times do |c|
+            nums[r][c] = (self[r, c].diam_abs / size).ceil
+          end
+        end
+        each_subdivision(nums, &block)
+      else
+        to_enum(:each_subdivision_by_size, size)
+      end
+    end
+
+    def subdivision(nums)
+      each_subdivision(nums).to_a
+    end
+
+    def subdivision_by_size(size)
+      each_subdivision_by_size(size).to_a
+    end
+
     def self.create(a)
       case a
       when MPFI::Vector
@@ -106,7 +170,6 @@ class MPFI < Numeric
       end
       ret
     end
-    
   end
 
   module Vector
@@ -134,26 +197,52 @@ class MPFI < Numeric
       str_ary_for_inspect.join(delimiter)
     end
 
-    def subdivision_by_size(size)
-      division = []
-      each { |el| division << el.subdivision((el.diam_abs / size).ceil) }
-      ary_size = division.inject(1) { |mul, a| mul * a.size }
-      ary = Array.new(ary_size) { Array.new }
-      num = ary_size
-      division.each do |div|
-        j = 0
-        repeat = ary_size / num
-        num = num / div.size
-        repeat.times do
-          div.size.times do |i|
-            num.times do
-              ary[j] << div[i]
-              j += 1
+    def each_subdivision(*nums)
+      if block_given?
+        dim = self.size
+        unless dim == nums.size
+          raise ArgumentError, "Invalid numbers to specify split"
+        end
+        num_current = 0
+        elements = nums.each_with_index.map { |num, i| self[i].subdivision(num) }
+        indices = Array.new(dim, 0)
+        args = []
+        while num_current >= 0
+          while num_current < dim
+            if args[num_current] = elements[num_current][indices[num_current]]
+              indices[num_current] += 1
+            else
+              indices[num_current] = 0
+              num_current -= 1
+              break
             end
+            num_current += 1
+          end
+          if num_current == dim
+            yield(self.class.new(args))
+            num_current -= 1
           end
         end
+      else
+        to_enum(:each_subdivision, *nums)
       end
-      ary.map! { |a| self.class.new(a) }
+    end
+
+    def each_subdivision_by_size(size, &block)
+      if block_given?
+        nums = self.size.times.map { |i| (self[i].diam_abs / size).ceil }
+        each_subdivision(*nums, &block)
+      else
+        to_enum(:each_subdivision_by_size, size)
+      end
+    end
+
+    def subdivision(*nums)
+      each_subdivision(*nums).to_a
+    end
+
+    def subdivision_by_size(size)
+      each_subdivision_by_size(size).to_a
     end
 
     def self.inner_product(a, b)
