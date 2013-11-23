@@ -91,7 +91,7 @@ static VALUE r_mpfi_matrix_global_new (int argc, VALUE *argv, VALUE self)
 {
   MPFIMatrix *ptr;
   VALUE val;
-  r_mpfi_make_col_vector_struct(val, ptr);
+  r_mpfi_make_matrix_struct(val, ptr);
   r_mpfi_matrix_set_initial_value(ptr, argc, argv);
   return val;
 }
@@ -1234,7 +1234,7 @@ void Init_matrix() {
   r_mpfi_col_vector = rb_define_class_under(tmp_r_mpfi_class, "ColumnVector", r_mpfi_matrix);
   r_mpfi_row_vector = rb_define_class_under(tmp_r_mpfi_class, "RowVector", r_mpfi_matrix);
 
-  rb_define_singleton_method(r_mpfi_matrix, "Matrix", r_mpfi_matrix_global_new, -1);
+  rb_define_singleton_method(tmp_r_mpfi_class, "Matrix", r_mpfi_matrix_global_new, -1);
   rb_define_alloc_func(r_mpfi_matrix, r_mpfi_matrix_alloc);
   rb_define_private_method(r_mpfi_matrix, "initialize", r_mpfi_matrix_initialize, -1);
   rb_define_private_method(r_mpfi_matrix, "initialize_copy", r_mpfi_matrix_initialize_copy, 1);
