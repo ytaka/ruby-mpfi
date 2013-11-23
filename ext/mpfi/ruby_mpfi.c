@@ -1097,66 +1097,72 @@ static VALUE r_mpfi_bisect (int argc, VALUE *argv, VALUE self)
   return rb_ary_new3(2, val_ret1, val_ret2);
 }
 
-/* Retrun 0 if this function puts subdivision to *ret. */
-/* Otherwise, return -1. */
-void r_mpfi_subdivision_func (int num, MPFI *ret, mpfi_t x)
+/* Yield MPFI instances obtained by subdividing. */
+static VALUE r_mpfi_each_subdivision (int argc, VALUE *argv, VALUE self)
 {
-  int i;
-  mpfr_t l;
-  mpfr_t x_diam;
-  mpfr_init(l);
-  mpfr_sub(l, r_mpfi_right_ptr(x), r_mpfi_left_ptr(x), GMP_RNDD);
-  mpfr_div_si(l, l, num, GMP_RNDD);
-  mpfr_init(x_diam);
-  mpfi_diam_abs(x_diam, x);
-  if (mpfr_cmp(x_diam, l) > 0 && num > 1) {
-    mpfr_set(r_mpfi_left_ptr(ret), r_mpfi_left_ptr(x), GMP_RNDN);
-    mpfr_add(r_mpfi_right_ptr(ret), r_mpfi_left_ptr(ret), l, GMP_RNDU);
-
-    for (i = 1; i < num - 1; i++) {
-      mpfr_set(r_mpfi_left_ptr(ret + i), r_mpfi_right_ptr(ret + i - 1), GMP_RNDN);
-      mpfr_add(r_mpfi_right_ptr(ret + i), r_mpfi_left_ptr(ret + i), l, GMP_RNDU);
-    }
-
-    mpfr_set(r_mpfi_left_ptr(ret + i), r_mpfi_right_ptr(ret + i - 1), GMP_RNDN);
-    mpfr_set(r_mpfi_right_ptr(ret + i), r_mpfi_right_ptr(x), GMP_RNDN);
-  } else {
-    mpfr_set(r_mpfi_left_ptr(ret), r_mpfi_left_ptr(x), GMP_RNDN);
-    mpfr_set(r_mpfi_right_ptr(ret), r_mpfi_right_ptr(x), GMP_RNDN);
-  }
-  mpfr_clear(x_diam);
-  mpfr_clear(l);
-}
-
-/* Return array having MPFI instances by subdividing. */
-static VALUE r_mpfi_subdivision (int argc, VALUE *argv, VALUE self)
-{
-  MPFI *ptr_self, *fi_split;
-  int i, num, prec;
+  MPFI *ptr_self;
+  int i, num, prec, state = 0;
+  mpfr_t ptr_self_diam, step, endpoint;
   VALUE ret;
-  r_mpfi_get_struct(ptr_self, self);
+  RETURN_ENUMERATOR(self, argc, argv);
   num = NUM2INT(argv[0]);
   if (num <= 0) {
     rb_raise(rb_eArgError, "Split number must be positive.");
   }
   prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
-  fi_split = ALLOC_N(MPFI, num);
-  for (i = 0; i < num; i++) {
-    mpfi_init2(fi_split + i, prec);
-  }
-  r_mpfi_subdivision_func(num, fi_split, ptr_self);
-  ret = rb_ary_new();
-  for (i = 0; i < num; i++) {
+  r_mpfi_get_struct(ptr_self, self);
+  mpfr_init2(ptr_self_diam, prec);
+  mpfr_init2(step, prec);
+  mpfr_init2(endpoint, prec);
+  mpfr_sub(step, r_mpfi_right_ptr(ptr_self), r_mpfi_left_ptr(ptr_self), GMP_RNDD);
+  mpfr_div_si(step, step, num, GMP_RNDD);
+  mpfi_diam_abs(ptr_self_diam, ptr_self);
+  if (mpfr_cmp(ptr_self_diam, step) > 0 && num > 1) {
+    {
+      volatile VALUE obj;
+      MPFI *ptr_obj;
+      r_mpfi_make_struct_init2(obj, ptr_obj, prec);
+      mpfr_set(r_mpfi_left_ptr(ptr_obj), r_mpfi_left_ptr(ptr_self), GMP_RNDD);
+      mpfr_add(endpoint, r_mpfi_left_ptr(ptr_self), step, GMP_RNDU);
+      mpfr_set(r_mpfi_right_ptr(ptr_obj), endpoint, GMP_RNDU);
+      ret = rb_protect(rb_yield, obj, &state);
+    }
+    if (state == 0) {
+      for (i = 1; i < num - 1; i++) {
+        volatile VALUE obj;
+        MPFI *ptr_obj;
+        r_mpfi_make_struct_init2(obj, ptr_obj, prec);
+        mpfr_set(r_mpfi_left_ptr(ptr_obj), endpoint, GMP_RNDD);
+        mpfr_add(endpoint, endpoint, step, GMP_RNDU);
+        mpfr_set(r_mpfi_right_ptr(ptr_obj), endpoint, GMP_RNDU);
+        ret = rb_protect(rb_yield, obj, &state);
+        if (state != 0) {
+          break;
+        }
+      }
+      if (state == 0) {
+        volatile VALUE obj;
+        MPFI *ptr_obj;
+        r_mpfi_make_struct_init2(obj, ptr_obj, prec);
+        mpfr_set(r_mpfi_left_ptr(ptr_obj), endpoint, GMP_RNDD);
+        mpfr_set(r_mpfi_right_ptr(ptr_obj), r_mpfi_right_ptr(ptr_self), GMP_RNDU);
+        ret = rb_protect(rb_yield, obj, &state);
+      }
+    }
+  } else {
     volatile VALUE obj;
     MPFI *ptr_obj;
     r_mpfi_make_struct_init2(obj, ptr_obj, prec);
-    mpfi_set(ptr_obj, (fi_split + i));
-    rb_ary_push(ret, obj);
+    mpfr_set(r_mpfi_left_ptr(ptr_obj), r_mpfi_left_ptr(ptr_self), GMP_RNDD);
+    mpfr_set(r_mpfi_right_ptr(ptr_obj), r_mpfi_right_ptr(ptr_self), GMP_RNDU);
+    ret = rb_protect(rb_yield, obj, &state);
   }
-  for (i = 0; i < num; i++) {
-    mpfi_clear((fi_split + i));
+  mpfr_clear(ptr_self_diam);
+  mpfr_clear(endpoint);
+  mpfr_clear(step);
+  if (state != 0) {
+    rb_jump_tag(state);
   }
-  free(fi_split);
   return ret;
 }
 /* ------------------------------ Miscellaneous Interval Functions end ------------------------------ */
@@ -1699,7 +1705,7 @@ void Init_mpfi()
   rb_define_method(r_mpfi_class, "increase", r_mpfi_increase, 1);
   rb_define_method(r_mpfi_class, "blow", r_mpfi_blow, -1);
   rb_define_method(r_mpfi_class, "bisect", r_mpfi_bisect, -1);
-  rb_define_method(r_mpfi_class, "subdivision", r_mpfi_subdivision, -1);
+  rb_define_method(r_mpfi_class, "each_subdivision", r_mpfi_each_subdivision, -1);
   /* ------------------------------ Miscellaneous Interval Functions end ------------------------------ */
   
   r_mpfi_math = rb_define_module_under(r_mpfi_class, "Math");  
