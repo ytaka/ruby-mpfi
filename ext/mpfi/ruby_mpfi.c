@@ -9,13 +9,13 @@ static VALUE __mpfi_class__, __mpfr_class__, __sym_to_s__, __sym_to_str__;
 /* ------------------------------ function state start ------------------------------ */
 
 /* Save the value of last function state. */
-void r_mpfi_set_function_state(int num)
+void r_mpfi_set_function_state (int num)
 {
   rb_cv_set(r_mpfi_class, CLASS_VAL_FUNCTION_STATE, INT2NUM(num));
 }
 
 /* Return state of last function of MPFI. */
-VALUE r_mpfi_get_function_state(VALUE self)
+VALUE r_mpfi_get_function_state (VALUE self)
 {
   return rb_cv_get(r_mpfi_class, CLASS_VAL_FUNCTION_STATE);
 }
@@ -24,13 +24,13 @@ VALUE r_mpfi_get_function_state(VALUE self)
 
 /* ------------------------------ allocation start ------------------------------ */
 
-void r_mpfi_free(void *ptr)
+void r_mpfi_free (void *ptr)
 {
   mpfi_clear(ptr);
   free(ptr);
 }
 
-VALUE r_mpfi_make_new_fi_obj(MPFI *ptr)
+VALUE r_mpfi_make_new_fi_obj (MPFI *ptr)
 {
   VALUE ret;
   MPFI *ptr_ret;
@@ -41,16 +41,16 @@ VALUE r_mpfi_make_new_fi_obj(MPFI *ptr)
 
 static void r_mpfi_set_interv_from_robjs (MPFI *ptr, VALUE a1, VALUE a2)
 {
-  if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, a1)) && RTEST(rb_funcall(__mpfr_class__, eqq, 1, a2))){
+  if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, a1)) && RTEST(rb_funcall(__mpfr_class__, eqq, 1, a2))) {
     MPFR *ptr_a1, *ptr_a2;
     r_mpfr_get_struct(ptr_a1, a1);
     r_mpfr_get_struct(ptr_a2, a2);
     r_mpfi_set_function_state(mpfi_interv_fr(ptr, ptr_a1, ptr_a2));
-  }else if((TYPE(a1) == T_FIXNUM) && (TYPE(a2) == T_FIXNUM)){
+  } else if ((TYPE(a1) == T_FIXNUM) && (TYPE(a2) == T_FIXNUM)) {
     r_mpfi_set_function_state(mpfi_interv_si(ptr, FIX2LONG(a1), FIX2LONG(a2)));
-  }else if((TYPE(a1) == T_FLOAT) && (TYPE(a2) == T_FLOAT)){
+  } else if ((TYPE(a1) == T_FLOAT) && (TYPE(a2) == T_FLOAT)) {
     r_mpfi_set_function_state(mpfi_interv_d(ptr, NUM2DBL(a1), NUM2DBL(a2)));
-  }else{
+  } else {
     MPFR *ptr_a1, *ptr_a2;
     volatile VALUE tmp_a1 = r_mpfr_new_fr_obj(a1);
     volatile VALUE tmp_a2 = r_mpfr_new_fr_obj(a2);
@@ -76,29 +76,29 @@ static void r_mpfi_set_from_string (MPFI *ptr, VALUE obj)
   char *str;
   if (RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_str__))) {
     str = StringValuePtr(obj);
-  } else if (RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_s__))){
+  } else if (RTEST(rb_funcall(rb_funcall(obj, class, 0), method_defined, 1, __sym_to_s__))) {
     VALUE tmp = rb_funcall(obj, to_s, 0);
     str = StringValuePtr(tmp);
   } else {
     rb_raise(rb_eArgError, "Can not convert to strings.");
   }
-  if(mpfi_set_str(ptr, str, 10) != 0) {
+  if (mpfi_set_str(ptr, str, 10) != 0) {
     rb_raise(rb_eArgError, "Invalid string format of MPFI initialization: \"%s\"", str);
   }
 }
 
-void r_mpfi_set_robj(MPFI *ptr, VALUE obj)
+void r_mpfi_set_robj (MPFI *ptr, VALUE obj)
 {
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, obj))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, obj))) {
     MPFI *ptr_obj;
     r_mpfi_get_struct(ptr_obj, obj);
     mpfi_set(ptr, ptr_obj);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, obj))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, obj))) {
     MPFR *ptr_obj;
     r_mpfr_get_struct(ptr_obj, obj);
     mpfi_set_fr(ptr, ptr_obj);
-  }else{
-    switch(TYPE(obj)){
+  } else {
+    switch (TYPE(obj)) {
     case T_FLOAT:
       mpfi_set_d(ptr, NUM2DBL(obj));
       break;
@@ -115,11 +115,11 @@ void r_mpfi_set_robj(MPFI *ptr, VALUE obj)
   }
 }
 
-VALUE r_mpfi_new_fi_obj(VALUE obj)
+VALUE r_mpfi_new_fi_obj (VALUE obj)
 {
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, obj))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, obj))) {
     return obj;
-  }else{
+  } else {
     return rb_funcall(__mpfi_class__, new, 1, obj);
   }
 }
@@ -127,16 +127,16 @@ VALUE r_mpfi_new_fi_obj(VALUE obj)
 /* Initializing and Assigning Intervals */
 
 /* Allocation function. */
-static VALUE r_mpfi_alloc(VALUE self)
+static VALUE r_mpfi_alloc (VALUE self)
 {
   MPFI *ptr;
   r_mpfi_make_struct(self, ptr);
   return self;
 }
 
-static void r_mpfi_set_initial_value(MPFI *ptr, int argc, VALUE *argv)
+static void r_mpfi_set_initial_value (MPFI *ptr, int argc, VALUE *argv)
 {
-  switch(argc){
+  switch (argc) {
   case 0:
     mpfi_init(ptr);
     break;
@@ -155,7 +155,7 @@ static void r_mpfi_set_initial_value(MPFI *ptr, int argc, VALUE *argv)
 }
 
 /* Return new MPFI instance. The same arguments as MPFI.new is acceptable. */
-static VALUE r_mpfi_global_new(int argc, VALUE *argv, VALUE self)
+static VALUE r_mpfi_global_new (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr;
   VALUE val;
@@ -169,7 +169,7 @@ static VALUE r_mpfi_global_new(int argc, VALUE *argv, VALUE self)
    which is MPFR, Float, Fixnum, String, and Array having two elements.
    The string must be "number" or "[number1, number2]" (refer MPFI documents).
    The second one is precision and its class is Fixnum. */
-static VALUE r_mpfi_initialize(int argc, VALUE *argv, VALUE self)
+static VALUE r_mpfi_initialize (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr;
   r_mpfi_get_struct(ptr, self);
@@ -178,7 +178,7 @@ static VALUE r_mpfi_initialize(int argc, VALUE *argv, VALUE self)
 }
 
 /* initialize_copy. */
-static VALUE r_mpfi_initialize_copy(VALUE self, VALUE other)
+static VALUE r_mpfi_initialize_copy (VALUE self, VALUE other)
 {
   MPFI *ptr_self, *ptr_other;
   r_mpfi_get_struct(ptr_self, self);
@@ -189,7 +189,7 @@ static VALUE r_mpfi_initialize_copy(VALUE self, VALUE other)
 }
 
 /* Return array which have MPFI instance converted to from p1 and self. */
-static VALUE r_mpfi_coerce(VALUE self, VALUE other)
+static VALUE r_mpfi_coerce (VALUE self, VALUE other)
 {
   VALUE val_other;
   MPFI *ptr_self, *ptr_other;
@@ -218,12 +218,12 @@ static VALUE r_mpfi_swap (VALUE self, VALUE other)
   return self;
 }
 
-char *r_mpfi_dump_to_string(MPFI *ptr_s)
+char *r_mpfi_dump_to_string (MPFI *ptr_s)
 {
   char *ret_str, *str_right, *str_left;
   str_left = r_mpfr_dump_to_string(r_mpfi_left_ptr(ptr_s));
   str_right = r_mpfr_dump_to_string(r_mpfi_right_ptr(ptr_s));
-  if(!mpfr_asprintf(&ret_str, "%s %s", str_left, str_right)) {
+  if (!mpfr_asprintf(&ret_str, "%s %s", str_left, str_right)) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
   mpfr_free_str(str_left);
@@ -231,7 +231,7 @@ char *r_mpfi_dump_to_string(MPFI *ptr_s)
   return ret_str;
 }
 
-static VALUE r_mpfi_marshal_dump(VALUE self)
+static VALUE r_mpfi_marshal_dump (VALUE self)
 {
   MPFI *ptr_s;
   char *ret_str;
@@ -243,7 +243,7 @@ static VALUE r_mpfi_marshal_dump(VALUE self)
   return ret_val;
 }
 
-void r_mpfi_load_string(MPFI *ptr_s, const char *dump)
+void r_mpfi_load_string (MPFI *ptr_s, const char *dump)
 {
   int i;
   char *left;
@@ -260,7 +260,7 @@ void r_mpfi_load_string(MPFI *ptr_s, const char *dump)
   r_mpfr_load_string(r_mpfi_right_ptr(ptr_s), dump + i);
 }
 
-static VALUE r_mpfi_marshal_load(VALUE self, VALUE dump_string)
+static VALUE r_mpfi_marshal_load (VALUE self, VALUE dump_string)
 {
   MPFI *ptr_s;
   char *dump;
@@ -284,7 +284,7 @@ static VALUE r_mpfi_set_prec (VALUE self, VALUE prec)
 {
   MPFI *ptr_self;
   r_mpfi_get_struct(ptr_self, self);
-  /* if(mpfi_set_prec(ptr_self, NUM2INT(prec)) != 0){ */
+  /* if (mpfi_set_prec(ptr_self, NUM2INT(prec)) != 0) { */
   /*   rb_raise(rb_eRuntimeError, "Memory allocation failed for mpfi_set_prec."); */
   /* } */
   mpfi_set_prec(ptr_self, NUM2INT(prec));
@@ -314,15 +314,15 @@ static VALUE r_mpfi_round_prec (VALUE self, VALUE prec)
 /* ------------------------------ string start ------------------------------ */
 
 /* String for inspect. */
-static VALUE r_mpfi_inspect(VALUE self)
+static VALUE r_mpfi_inspect (VALUE self)
 {
   MPFI *ptr_s;
   char *ret_str;
   VALUE ret_val;
   r_mpfi_get_struct(ptr_s, self);
   if (!mpfr_asprintf(&ret_str, "#<MPFI:%lx,['%.Re %.Re'],%d>",
-		    NUM2LONG(rb_funcall(self, object_id, 0)), r_mpfi_left_ptr(ptr_s),
-		    r_mpfi_right_ptr(ptr_s), mpfi_get_prec(ptr_s))) {
+                     NUM2LONG(rb_funcall(self, object_id, 0)), r_mpfi_left_ptr(ptr_s),
+                     r_mpfi_right_ptr(ptr_s), mpfi_get_prec(ptr_s))) {
     rb_raise(rb_eFatal, "Can not allocate a string by mpfr_asprintf.");
   }
   ret_val = rb_str_new2(ret_str);
@@ -331,7 +331,7 @@ static VALUE r_mpfi_inspect(VALUE self)
 }
 
 /* Return array having two strings to which endpoints is converted. */
-static VALUE r_mpfi_to_str_ary(VALUE self)
+static VALUE r_mpfi_to_str_ary (VALUE self)
 {
   MPFI *ptr_self;
   char *ret_str1, *ret_str2;
@@ -351,7 +351,7 @@ static VALUE r_mpfi_to_str_ary(VALUE self)
 }
 
 /* Return array having two strings to which endpoints are converted by mpfr_asprintf with format_str. */
-static VALUE r_mpfi_to_strf_ary(VALUE self, VALUE format_str)
+static VALUE r_mpfi_to_strf_ary (VALUE self, VALUE format_str)
 {
   MPFI *ptr_self;
   char *format, *ret_str1, *ret_str2;
@@ -383,19 +383,19 @@ static VALUE r_mpfi_add (VALUE self, VALUE other)
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init(val_ret, ptr_ret);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     mpfi_add(ptr_ret, ptr_self, ptr_other);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     mpfi_add_fr(ptr_ret, ptr_self, ptr_other);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     mpfi_add_si(ptr_ret, ptr_self, FIX2LONG(other));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     mpfi_add_d(ptr_ret, ptr_self, NUM2DBL(other));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -412,19 +412,19 @@ static VALUE r_mpfi_sub (VALUE self, VALUE other)
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init(val_ret, ptr_ret);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     mpfi_sub(ptr_ret, ptr_self, ptr_other);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     mpfi_sub_fr(ptr_ret, ptr_self, ptr_other);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     mpfi_sub_si(ptr_ret, ptr_self, FIX2LONG(other));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     mpfi_sub_d(ptr_ret, ptr_self, NUM2DBL(other));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -441,19 +441,19 @@ static VALUE r_mpfi_mul (VALUE self, VALUE other)
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init(val_ret, ptr_ret);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     mpfi_mul(ptr_ret, ptr_self, ptr_other);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     mpfi_mul_fr(ptr_ret, ptr_self, ptr_other);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     mpfi_mul_si(ptr_ret, ptr_self, FIX2LONG(other));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     mpfi_mul_d(ptr_ret, ptr_self, NUM2DBL(other));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -470,19 +470,19 @@ static VALUE r_mpfi_div (VALUE self, VALUE other)
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_make_struct_init(val_ret, ptr_ret);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     mpfi_div(ptr_ret, ptr_self, ptr_other);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     mpfi_div_fr(ptr_ret, ptr_self, ptr_other);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     mpfi_div_si(ptr_ret, ptr_self, FIX2LONG(other));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     mpfi_div_d(ptr_ret, ptr_self, NUM2DBL(other));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -514,7 +514,7 @@ static VALUE r_mpfi_div_2si (int argc, VALUE *argv, VALUE self)
 }
 
 /* mpfi_neg(ret, self) */
-static VALUE r_mpfi_neg(int argc, VALUE *argv, VALUE self)
+static VALUE r_mpfi_neg (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
   VALUE val_ret;
@@ -525,7 +525,7 @@ static VALUE r_mpfi_neg(int argc, VALUE *argv, VALUE self)
 }
 
 /* mpfi_inv(ret, self) */
-static VALUE r_mpfi_inv(int argc, VALUE *argv, VALUE self)
+static VALUE r_mpfi_inv (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
   VALUE val_ret;
@@ -536,7 +536,7 @@ static VALUE r_mpfi_inv(int argc, VALUE *argv, VALUE self)
 }
 
 /* mpfi_abs(ret, self) */
-static VALUE r_mpfi_abs(int argc, VALUE *argv, VALUE self)
+static VALUE r_mpfi_abs (int argc, VALUE *argv, VALUE self)
 {
   MPFI *ptr_self, *ptr_ret;
   VALUE val_ret;
@@ -557,19 +557,19 @@ static VALUE r_mpfi_cmp (VALUE self, VALUE other)
   int ret;
   r_mpfi_get_struct(ptr_self, self);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     ret = mpfi_cmp(ptr_self, ptr_other);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     ret = mpfi_cmp_fr(ptr_self, ptr_other);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     ret = mpfi_cmp_si(ptr_self, FIX2LONG(other));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     ret = mpfi_cmp_d(ptr_self, NUM2DBL(other));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -585,7 +585,7 @@ static VALUE r_mpfi_is_pos (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_pos(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -597,7 +597,7 @@ static VALUE r_mpfi_is_strictly_pos (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_strictly_pos(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -609,7 +609,7 @@ static VALUE r_mpfi_is_nonneg (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_nonneg(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -621,7 +621,7 @@ static VALUE r_mpfi_is_neg (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_neg(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -633,7 +633,7 @@ static VALUE r_mpfi_is_strictly_neg (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_strictly_neg(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -645,7 +645,7 @@ static VALUE r_mpfi_is_nonpos (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_nonpos(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -657,7 +657,7 @@ static VALUE r_mpfi_is_zero (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_is_zero(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -669,7 +669,7 @@ static VALUE r_mpfi_has_zero (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_has_zero(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -681,7 +681,7 @@ static VALUE r_mpfi_nan_p (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_nan_p(ptr_self) != 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -693,7 +693,7 @@ static VALUE r_mpfi_inf_p (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_inf_p(ptr_self) != 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -705,7 +705,7 @@ static VALUE r_mpfi_bounded_p (VALUE self)
   r_mpfi_get_struct(ptr_self, self);
   if (mpfi_bounded_p(ptr_self) != 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -722,7 +722,7 @@ static VALUE r_mpfi_equal_p (VALUE self, VALUE other)
   if (mpfr_equal_p(r_mpfi_left_ptr(ptr_self), r_mpfi_left_ptr(ptr_other)) != 0 &&
       mpfr_equal_p(r_mpfi_right_ptr(ptr_self), r_mpfi_right_ptr(ptr_other)) != 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -831,7 +831,7 @@ static VALUE r_mpfi_alea (int argc, VALUE *argv, VALUE self)
 /* ------------------------------ Conversion Functions start ------------------------------ */
 
 /* Return float by mpfi_get_d(self). */
-static VALUE r_mpfi_get_d(VALUE self)
+static VALUE r_mpfi_get_d (VALUE self)
 {
   MPFI *ptr_self;
   r_mpfi_get_struct(ptr_self, self);
@@ -839,7 +839,7 @@ static VALUE r_mpfi_get_d(VALUE self)
 }
 
 /* Return MPFR by mpfi_get_fr(ret, self). */
-static VALUE r_mpfi_get_fr(VALUE self)
+static VALUE r_mpfi_get_fr (VALUE self)
 {
   MPFI *ptr_self;
   VALUE val_ret;
@@ -882,9 +882,9 @@ static VALUE r_mpfi_revert_if_needed (VALUE self)
 {
   MPFI *ptr_self;
   r_mpfi_get_struct(ptr_self, self);
-  if(mpfi_revert_if_needed(ptr_self) != 0){
+  if (mpfi_revert_if_needed(ptr_self) != 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   };
 }
@@ -895,19 +895,19 @@ static VALUE r_mpfi_put (VALUE self, VALUE other)
   MPFI *ptr_self;
   r_mpfi_get_struct(ptr_self, self);
 
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     r_mpfi_set_function_state(mpfi_put(ptr_self, ptr_other));
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     r_mpfi_set_function_state(mpfi_put_fr(ptr_self, ptr_other));
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     r_mpfi_set_function_state(mpfi_put_si(ptr_self, FIX2LONG(other)));
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     r_mpfi_set_function_state(mpfi_put_d(ptr_self, NUM2DBL(other)));
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
@@ -959,9 +959,9 @@ static VALUE r_mpfi_strictly_include (VALUE self, VALUE other)
   MPFI *ptr_self, *ptr_other;
   r_mpfi_get_struct(ptr_self, self);
   r_mpfi_get_struct(ptr_other, other);
-  if(mpfi_is_strictly_inside(ptr_other, ptr_self) > 0){
+  if (mpfi_is_strictly_inside(ptr_other, ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -972,27 +972,27 @@ static VALUE r_mpfi_include (VALUE self, VALUE other)
   MPFI *ptr_self;
   int result;
   r_mpfi_get_struct(ptr_self, self);
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, other))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, other);
     result = mpfi_is_inside(ptr_other, ptr_self);
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, other))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, other);
     result = mpfi_is_inside_fr(ptr_other, ptr_self);
-  }else if(TYPE(other) == T_FIXNUM){
+  } else if (TYPE(other) == T_FIXNUM) {
     result = mpfi_is_inside_si(FIX2LONG(other), ptr_self);
-  }else if(TYPE(other) == T_FLOAT){
+  } else if (TYPE(other) == T_FLOAT) {
     result = mpfi_is_inside_d(NUM2DBL(other), ptr_self);
-  }else{
+  } else {
     MPFI *ptr_other;
     volatile VALUE tmp_other = r_mpfi_new_fi_obj(other);
     r_mpfi_get_struct(ptr_other, tmp_other);
     result = mpfi_is_inside(ptr_other, ptr_self);
   }
-  if(result > 0){
+  if (result > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -1002,9 +1002,9 @@ static VALUE r_mpfi_is_empty (VALUE self)
 {
   MPFI *ptr_self;
   r_mpfi_get_struct(ptr_self, self);
-  if(mpfi_is_empty(ptr_self) > 0){
+  if (mpfi_is_empty(ptr_self) > 0) {
     return Qtrue;
-  }else{
+  } else {
     return Qnil;
   }
 }
@@ -1021,9 +1021,9 @@ static VALUE r_mpfi_intersect (int argc, VALUE *argv, VALUE self)
   r_mpfi_get_struct(ptr_a0, argv[0]);
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(1, 2, argc, argv));
   r_mpfi_set_function_state(mpfi_intersect(ptr_ret, ptr_self, ptr_a0));
-  if(mpfi_is_empty(ptr_ret) > 0){
+  if (mpfi_is_empty(ptr_ret) > 0) {
     return Qnil;
-  }else{
+  } else {
     return val_ret;
   }
 }
@@ -1099,7 +1099,7 @@ static VALUE r_mpfi_bisect (int argc, VALUE *argv, VALUE self)
 
 /* Retrun 0 if this function puts subdivision to *ret. */
 /* Otherwise, return -1. */
-void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
+void r_mpfi_subdivision_func (int num, MPFI *ret, mpfi_t x)
 {
   int i;
   mpfr_t l;
@@ -1109,20 +1109,20 @@ void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
   mpfr_div_si(l, l, num, GMP_RNDD);
   mpfr_init(x_diam);
   mpfi_diam_abs(x_diam, x);
-  if(mpfr_cmp(x_diam, l) > 0 && num > 1){
-    mpfr_set(r_mpfi_left_ptr(ret[0]), r_mpfi_left_ptr(x), GMP_RNDN);
-    mpfr_add(r_mpfi_right_ptr(ret[0]), r_mpfi_left_ptr(ret[0]), l, GMP_RNDU);
+  if (mpfr_cmp(x_diam, l) > 0 && num > 1) {
+    mpfr_set(r_mpfi_left_ptr(ret), r_mpfi_left_ptr(x), GMP_RNDN);
+    mpfr_add(r_mpfi_right_ptr(ret), r_mpfi_left_ptr(ret), l, GMP_RNDU);
 
-    for(i = 1; i < num - 1; i ++){
-      mpfr_set(r_mpfi_left_ptr(ret[i]), r_mpfi_right_ptr(ret[i - 1]), GMP_RNDN);
-      mpfr_add(r_mpfi_right_ptr(ret[i]), r_mpfi_left_ptr(ret[i]), l, GMP_RNDU);
+    for (i = 1; i < num - 1; i++) {
+      mpfr_set(r_mpfi_left_ptr(ret + i), r_mpfi_right_ptr(ret + i - 1), GMP_RNDN);
+      mpfr_add(r_mpfi_right_ptr(ret + i), r_mpfi_left_ptr(ret + i), l, GMP_RNDU);
     }
 
-    mpfr_set(r_mpfi_left_ptr(ret[i]), r_mpfi_right_ptr(ret[i - 1]), GMP_RNDN);
-    mpfr_set(r_mpfi_right_ptr(ret[i]), r_mpfi_right_ptr(x), GMP_RNDN);
-  }else{
-    mpfr_set(r_mpfi_left_ptr(ret[0]), r_mpfi_left_ptr(x), GMP_RNDN);
-    mpfr_set(r_mpfi_right_ptr(ret[0]), r_mpfi_right_ptr(x), GMP_RNDN);
+    mpfr_set(r_mpfi_left_ptr(ret + i), r_mpfi_right_ptr(ret + i - 1), GMP_RNDN);
+    mpfr_set(r_mpfi_right_ptr(ret + i), r_mpfi_right_ptr(x), GMP_RNDN);
+  } else {
+    mpfr_set(r_mpfi_left_ptr(ret), r_mpfi_left_ptr(x), GMP_RNDN);
+    mpfr_set(r_mpfi_right_ptr(ret), r_mpfi_right_ptr(x), GMP_RNDN);
   }
   mpfr_clear(x_diam);
   mpfr_clear(l);
@@ -1131,21 +1131,32 @@ void r_mpfi_subdivision_func(int num, MPFI *ret[], mpfi_t x)
 /* Return array having MPFI instances by subdividing. */
 static VALUE r_mpfi_subdivision (int argc, VALUE *argv, VALUE self)
 {
-  MPFI *ptr_self, **f;
+  MPFI *ptr_self, *fi_split;
   int i, num, prec;
-  VALUE *vf, ret;
+  VALUE ret;
   r_mpfi_get_struct(ptr_self, self);
   num = NUM2INT(argv[0]);
-  prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
-  vf = ALLOC_N(VALUE, num);
-  f = ALLOC_N(MPFI*, num);
-  for(i = 0; i < num; i++){
-    r_mpfi_make_struct_init2(vf[i], f[i], prec);
+  if (num <= 0) {
+    rb_raise(rb_eArgError, "Split number must be positive.");
   }
-  r_mpfi_subdivision_func(num, f, ptr_self);
-  ret = rb_ary_new4(num, vf);
-  free(vf);
-  free(f);
+  prec = r_mpfr_prec_from_optional_argument(1, 2, argc, argv);
+  fi_split = ALLOC_N(MPFI, num);
+  for (i = 0; i < num; i++) {
+    mpfi_init2(fi_split + i, prec);
+  }
+  r_mpfi_subdivision_func(num, fi_split, ptr_self);
+  ret = rb_ary_new();
+  for (i = 0; i < num; i++) {
+    volatile VALUE obj;
+    MPFI *ptr_obj;
+    r_mpfi_make_struct_init2(obj, ptr_obj, prec);
+    mpfi_set(ptr_obj, (fi_split + i));
+    rb_ary_push(ret, obj);
+  }
+  for (i = 0; i < num; i++) {
+    mpfi_clear((fi_split + i));
+  }
+  free(fi_split);
   return ret;
 }
 /* ------------------------------ Miscellaneous Interval Functions end ------------------------------ */
@@ -1161,19 +1172,19 @@ static VALUE r_mpfi_math_add (int argc, VALUE *argv, VALUE self)
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
   tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_add(ptr_ret, ptr_a0, ptr_other));
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_add_fr(ptr_ret, ptr_a0, ptr_other));
-  }else if(TYPE(argv[1]) == T_FIXNUM){
+  } else if (TYPE(argv[1]) == T_FIXNUM) {
     r_mpfi_set_function_state(mpfi_add_si(ptr_ret, ptr_a0, FIX2LONG(argv[1])));
-  }else if(TYPE(argv[1]) == T_FLOAT){
+  } else if (TYPE(argv[1]) == T_FLOAT) {
     r_mpfi_set_function_state(mpfi_add_d(ptr_ret, ptr_a0, NUM2DBL(argv[1])));
-  }else{
+  } else {
     MPFI *ptr_a2;
     volatile VALUE tmp_argv1 = r_mpfi_new_fi_obj(argv[1]);
     r_mpfi_get_struct(ptr_a2, tmp_argv1);
@@ -1191,19 +1202,19 @@ static VALUE r_mpfi_math_sub (int argc, VALUE *argv, VALUE self)
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
   tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_sub(ptr_ret, ptr_a0, ptr_other));
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_sub_fr(ptr_ret, ptr_a0, ptr_other));
-  }else if(TYPE(argv[1]) == T_FIXNUM){
+  } else if (TYPE(argv[1]) == T_FIXNUM) {
     r_mpfi_set_function_state(mpfi_sub_si(ptr_ret, ptr_a0, FIX2LONG(argv[1])));
-  }else if(TYPE(argv[1]) == T_FLOAT){
+  } else if (TYPE(argv[1]) == T_FLOAT) {
     r_mpfi_set_function_state(mpfi_sub_d(ptr_ret, ptr_a0, NUM2DBL(argv[1])));
-  }else{
+  } else {
     MPFI *ptr_a2;
     volatile VALUE tmp_argv1 = r_mpfi_new_fi_obj(argv[1]);
     r_mpfi_get_struct(ptr_a2, tmp_argv1);
@@ -1221,19 +1232,19 @@ static VALUE r_mpfi_math_mul (int argc, VALUE *argv, VALUE self)
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
   tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_mul(ptr_ret, ptr_a0, ptr_other));
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_mul_fr(ptr_ret, ptr_a0, ptr_other));
-  }else if(TYPE(argv[1]) == T_FIXNUM){
+  } else if (TYPE(argv[1]) == T_FIXNUM) {
     r_mpfi_set_function_state(mpfi_mul_si(ptr_ret, ptr_a0, FIX2LONG(argv[1])));
-  }else if(TYPE(argv[1]) == T_FLOAT){
+  } else if (TYPE(argv[1]) == T_FLOAT) {
     r_mpfi_set_function_state(mpfi_mul_d(ptr_ret, ptr_a0, NUM2DBL(argv[1])));
-  }else{
+  } else {
     MPFI *ptr_a2;
     volatile VALUE tmp_argv1 = r_mpfi_new_fi_obj(argv[1]);
     r_mpfi_get_struct(ptr_a2, tmp_argv1);
@@ -1251,19 +1262,19 @@ static VALUE r_mpfi_math_div (int argc, VALUE *argv, VALUE self)
   r_mpfi_make_struct_init2(val_ret, ptr_ret, r_mpfr_prec_from_optional_argument(2, 3, argc, argv));
   tmp_argv0 = r_mpfi_new_fi_obj(argv[0]);
   r_mpfi_get_struct(ptr_a0, tmp_argv0);
-  if(RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))){
+  if (RTEST(rb_funcall(__mpfi_class__, eqq, 1, argv[1]))) {
     MPFI *ptr_other;
     r_mpfi_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_div(ptr_ret, ptr_a0, ptr_other));
-  }else if(RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))){
+  } else if (RTEST(rb_funcall(__mpfr_class__, eqq, 1, argv[1]))) {
     MPFR *ptr_other;
     r_mpfr_get_struct(ptr_other, argv[1]);
     r_mpfi_set_function_state(mpfi_div_fr(ptr_ret, ptr_a0, ptr_other));
-  }else if(TYPE(argv[1]) == T_FIXNUM){
+  } else if (TYPE(argv[1]) == T_FIXNUM) {
     r_mpfi_set_function_state(mpfi_div_si(ptr_ret, ptr_a0, FIX2LONG(argv[1])));
-  }else if(TYPE(argv[1]) == T_FLOAT){
+  } else if (TYPE(argv[1]) == T_FLOAT) {
     r_mpfi_set_function_state(mpfi_div_d(ptr_ret, ptr_a0, NUM2DBL(argv[1])));
-  }else{
+  } else {
     MPFI *ptr_a2;
     volatile VALUE tmp_argv1 = r_mpfi_new_fi_obj(argv[1]);
     r_mpfi_get_struct(ptr_a2, tmp_argv1);
@@ -1740,4 +1751,3 @@ void Init_mpfi()
   __sym_to_str__ = rb_eval_string(":to_str");
 
 }
-

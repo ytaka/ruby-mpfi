@@ -43,55 +43,54 @@ typedef struct __MPFIMatrix{
 /* (for example, mpfi_matrix_transpose), */
 /* you must use differnt pointer for returned value from that of an argument. */
 
-void mpfi_matrix_clear(MPFIMatrix *mat);
-void mpfi_matrix_init(MPFIMatrix *mat, int row, int column);
-void mpfi_matrix_set_zeros(MPFIMatrix *mat);
-void mpfi_matrix_set_element(MPFIMatrix *mat, int row, int col, MPFI *a);
-void mpfi_matrix_set(MPFIMatrix *new, MPFIMatrix *x);
-void mpfi_matrix_swap(MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_clear (MPFIMatrix *mat);
+void mpfi_matrix_init (MPFIMatrix *mat, int row, int column);
+void mpfi_matrix_set_zeros (MPFIMatrix *mat);
+void mpfi_matrix_set_element (MPFIMatrix *mat, int row, int col, MPFI *a);
+void mpfi_matrix_set (MPFIMatrix *new, MPFIMatrix *x);
+void mpfi_matrix_swap (MPFIMatrix *x, MPFIMatrix *y);
 
-void mpfi_matrix_row(MPFIMatrix *new, MPFIMatrix *x, int row);
-void mpfi_matrix_column(MPFIMatrix *new, MPFIMatrix *x, int column);
-void mpfi_matrix_transpose(MPFIMatrix *new, MPFIMatrix *x);
-void mpfi_matrix_neg(MPFIMatrix *new, MPFIMatrix *x);
+void mpfi_matrix_row (MPFIMatrix *new, MPFIMatrix *x, int row);
+void mpfi_matrix_column (MPFIMatrix *new, MPFIMatrix *x, int column);
+void mpfi_matrix_transpose (MPFIMatrix *new, MPFIMatrix *x);
+void mpfi_matrix_neg (MPFIMatrix *new, MPFIMatrix *x);
 
-int mpfi_matrix_equal_p(MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_add(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_add_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
-void mpfi_matrix_sub(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_sub_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
-void mpfi_matrix_mul(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_mul_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
-void mpfi_matrix_mul_scalar(MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar);
-void mpfi_matrix_div_scalar(MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar);
+int mpfi_matrix_equal_p (MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_add (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_add_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
+void mpfi_matrix_sub (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_sub_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
+void mpfi_matrix_mul (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_mul_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y);
+void mpfi_matrix_mul_scalar (MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar);
+void mpfi_matrix_div_scalar (MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar);
 
-int mpfi_matrix_include_p(MPFIMatrix *x, MPFIMatrix *y);
-int mpfi_matrix_include_fr_p(MPFIMatrix *x, MPFRMatrix *y);
-int mpfi_matrix_strictly_include_p(MPFIMatrix *x, MPFIMatrix *y);
-int mpfi_matrix_bounded_p(MPFIMatrix *x);
-void mpfi_matrix_mid(MPFRMatrix *ret, MPFIMatrix *x);
-void mpfi_matrix_mid_interval(MPFIMatrix *ret, MPFIMatrix *x);
-void mpfi_matrix_from_mpfr_matrix(MPFIMatrix *ret, MPFRMatrix *x);
-int mpfi_matrix_intersect(MPFIMatrix *ret, MPFIMatrix *x, MPFIMatrix *y);
-int mpfi_matrix_union(MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y);
+int mpfi_matrix_include_p (MPFIMatrix *x, MPFIMatrix *y);
+int mpfi_matrix_include_fr_p (MPFIMatrix *x, MPFRMatrix *y);
+int mpfi_matrix_strictly_include_p (MPFIMatrix *x, MPFIMatrix *y);
+int mpfi_matrix_bounded_p (MPFIMatrix *x);
+void mpfi_matrix_mid (MPFRMatrix *ret, MPFIMatrix *x);
+void mpfi_matrix_mid_interval (MPFIMatrix *ret, MPFIMatrix *x);
+void mpfi_matrix_from_mpfr_matrix (MPFIMatrix *ret, MPFRMatrix *x);
+int mpfi_matrix_intersect (MPFIMatrix *ret, MPFIMatrix *x, MPFIMatrix *y);
+int mpfi_matrix_union (MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y);
 
-void mpfi_matrix_inner_product(MPFI *pr, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_vector_distance(MPFI *distance, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_vector_distance_center_pts(MPFR *distance, MPFIMatrix *x, MPFIMatrix *y);
-void mpfi_matrix_vector_norm(MPFI *norm, MPFIMatrix *x);
-void mpfi_matrix_max_norm(MPFI *norm, MPFIMatrix *x);
-void mpfi_matrix_max_diam_abs(MPFR *diam, MPFIMatrix *x);
+void mpfi_matrix_inner_product (MPFI *pr, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_vector_distance (MPFI *distance, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_vector_distance_center_pts (MPFR *distance, MPFIMatrix *x, MPFIMatrix *y);
+void mpfi_matrix_vector_norm (MPFI *norm, MPFIMatrix *x);
+void mpfi_matrix_max_norm (MPFI *norm, MPFIMatrix *x);
+void mpfi_matrix_max_diam_abs (MPFR *diam, MPFIMatrix *x);
 
 /* ----------------- vector ---------------- */
-void mpfi_col_vector_init(MPFIMatrix *mat, int row);
-void mpfi_row_vector_init(MPFIMatrix *mat, int column);
-int mpfi_vector_normalize(MPFIMatrix *new, MPFIMatrix *x);
-void mpfi_vector_midpoint(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
-int mpfi_vector_set_length(MPFIMatrix *new, MPFIMatrix *x, MPFR *l);
+void mpfi_col_vector_init (MPFIMatrix *mat, int row);
+void mpfi_row_vector_init (MPFIMatrix *mat, int column);
+int mpfi_vector_normalize (MPFIMatrix *new, MPFIMatrix *x);
+void mpfi_vector_midpoint (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y);
+int mpfi_vector_set_length (MPFIMatrix *new, MPFIMatrix *x, MPFR *l);
 
 /* ----------------- square matrix ----------------- */
 int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x);
-void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x);
-void mpfi_square_matrix_qr_decomp(MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x);
-void mpfi_square_matrix_identity(MPFIMatrix *id);
-
+void mpfi_square_matrix_determinant (MPFI *det, MPFIMatrix *x);
+void mpfi_square_matrix_qr_decomp (MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x);
+void mpfi_square_matrix_identity (MPFIMatrix *id);

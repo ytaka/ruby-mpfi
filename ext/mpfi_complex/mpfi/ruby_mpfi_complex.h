@@ -10,6 +10,6 @@
 #define r_mpfi_complex_temp_alloc_init(mpfi_complex_var) { mpfi_complex_var = ALLOC_N(MPFIComplex, 1); mpfi_complex_init(mpfi_complex_var); }
 #define r_mpfi_complex_temp_free(mpfi_complex_var) { mpfi_complex_clear(mpfi_complex_var); free(mpfi_complex_var); }
 
-void r_mpfi_complex_free(void *ptr);
+void r_mpfi_complex_free (void *ptr);
 
 #endif

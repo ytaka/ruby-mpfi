@@ -1,83 +1,83 @@
 #include "ruby_mpfi_matrix.h"
 
-void mpfi_matrix_init(MPFIMatrix *mat, int row, int column){
+void mpfi_matrix_init (MPFIMatrix *mat, int row, int column) {
   int i;
   mat->row = row;
   mat->column = column;
   mat->size = row * column;
   /* mat->data = (MPFI *)malloc(sizeof(MPFI) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  for(i = 0; i < mat->size; i++){
+  for (i = 0; i < mat->size; i++) {
     mpfi_init(mat->data + i);
   }
 }
 
-void mpfi_matrix_set_zeros(MPFIMatrix *mat){
+void mpfi_matrix_set_zeros (MPFIMatrix *mat) {
   int i;
-  for(i = 0; i < mat->size; i++){
+  for (i = 0; i < mat->size; i++) {
     mpfi_set_si(mat->data + i, 0);
   }
 }
 
-void mpfi_matrix_clear(MPFIMatrix *mat){
+void mpfi_matrix_clear (MPFIMatrix *mat) {
   int i;
-  for(i = 0; i < mat->size; i++){
+  for (i = 0; i < mat->size; i++) {
     mpfi_clear(mat->data + i);
   }
   free(mat->data);
 }
 
-void mpfi_matrix_set_element(MPFIMatrix *mat, int row, int col, MPFI *a){
+void mpfi_matrix_set_element (MPFIMatrix *mat, int row, int col, MPFI *a) {
   mpfi_set(mpfi_matrix_get_element(mat, row, col), a);
 }
 
-void mpfi_matrix_set(MPFIMatrix *new, MPFIMatrix *x){
+void mpfi_matrix_set (MPFIMatrix *new, MPFIMatrix *x) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_set(new->data + i, x->data + i);
   }
 }
 
-void mpfi_matrix_swap(MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_swap (MPFIMatrix *x, MPFIMatrix *y) {
   int i;
   for (i = 0; i < x->size; i++) {
     mpfi_swap(mpfi_matrix_get_ptr(x, i), mpfi_matrix_get_ptr(y, i));
   }
 }
 
-void mpfi_matrix_row(MPFIMatrix *new, MPFIMatrix *x, int row){
+void mpfi_matrix_row (MPFIMatrix *new, MPFIMatrix *x, int row) {
   int i;
   for (i = 0; i < x->column; i++) {
     mpfi_set(new->data + i, mpfi_matrix_get_element(x, row, i));
   }
 }
 
-void mpfi_matrix_column(MPFIMatrix *new, MPFIMatrix *x, int column){
+void mpfi_matrix_column (MPFIMatrix *new, MPFIMatrix *x, int column) {
   int i;
   for (i = 0; i < x->row; i++) {
     mpfi_set(new->data + i, mpfi_matrix_get_element(x, i, column));
   }
 }
 
-void mpfi_matrix_transpose(MPFIMatrix *new, MPFIMatrix *x){
+void mpfi_matrix_transpose (MPFIMatrix *new, MPFIMatrix *x) {
   int i, j, index;
-  for(j = 0; j < x->column; j++){
+  for (j = 0; j < x->column; j++) {
     index = j * x->row;
-    for(i = 0; i < x->row; i++){
+    for (i = 0; i < x->row; i++) {
       mpfi_set(new->data + j + i * new->row, x->data + i + index);
     }
   }
 }
 
-void mpfi_matrix_neg(MPFIMatrix *new, MPFIMatrix *x){
+void mpfi_matrix_neg (MPFIMatrix *new, MPFIMatrix *x) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_neg(new->data + i, x->data + i);
   }
 }
 
 /* Return 0 if *x and *y has the same elements. Otherwise return 1. */
-int mpfi_matrix_equal_p(MPFIMatrix *x, MPFIMatrix *y){
+int mpfi_matrix_equal_p (MPFIMatrix *x, MPFIMatrix *y) {
   int i, ret = 0;
   if (x->column == y->column && x->row == y->row) {
     for (i = 0; i < x->size; i++) {
@@ -87,65 +87,65 @@ int mpfi_matrix_equal_p(MPFIMatrix *x, MPFIMatrix *y){
 	break;
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   return ret;
 }
 
-void mpfi_matrix_add(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_add (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y) {
   int i, j, index;
-  for(j = 0; j < x->column; j++){
+  for (j = 0; j < x->column; j++) {
     index = j * x->row;
-    for(i = 0; i < x->row; i++){
+    for (i = 0; i < x->row; i++) {
       mpfi_add(new->data + i + index, x->data + i + index, y->data + i + index);
     }
   }
 }
 
-void mpfi_matrix_add_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y){
+void mpfi_matrix_add_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y) {
   int i, j, index;
-  for(j = 0; j < x->column; j++){
+  for (j = 0; j < x->column; j++) {
     index = j * x->row;
-    for(i = 0; i < x->row; i++){
+    for (i = 0; i < x->row; i++) {
       mpfi_add_fr(new->data + i + index, x->data + i + index, y->data + i + index);
     }
   }
 }
 
-void mpfi_matrix_sub(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_sub (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y) {
   int i, j, index;
-  for(j = 0; j < x->column; j++){
+  for (j = 0; j < x->column; j++) {
     index = j * x->row;
-    for(i = 0; i < x->row; i++){
+    for (i = 0; i < x->row; i++) {
       mpfi_sub(new->data + i + index, x->data + i + index, y->data + i + index);
     }
   }
 }
 
-void mpfi_matrix_sub_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y){
+void mpfi_matrix_sub_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y) {
   int i, j, index;
-  for(j = 0; j < x->column; j++){
+  for (j = 0; j < x->column; j++) {
     index = j * x->row;
-    for(i = 0; i < x->row; i++){
+    for (i = 0; i < x->row; i++) {
       mpfi_sub_fr(new->data + i + index, x->data + i + index, y->data + i + index);
     }
   }
 }
 
 /* x and new must be different pointer from each other. */
-void mpfi_matrix_mul(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_mul (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y) {
   int i, j, k, index, index_y;
   MPFI *tmp;
   r_mpfi_temp_alloc_init(tmp);
-  for(i = 0; i < new->size; i++){
+  for (i = 0; i < new->size; i++) {
     mpfi_set_si(new->data + i, 0);
   }
-  for(j = 0; j < y->column; j++){
-    for(i = 0; i < x->row; i++){
+  for (j = 0; j < y->column; j++) {
+    for (i = 0; i < x->row; i++) {
       index = i + j * new->row;
       index_y = j * y->row;
-      for(k = 0; k < x->column; k++){
+      for (k = 0; k < x->column; k++) {
 	mpfi_mul(tmp, x->data + i + k * x->row, y->data + k + index_y);
 	mpfi_add(new->data + index, new->data + index, tmp);
       }
@@ -155,18 +155,18 @@ void mpfi_matrix_mul(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
 }
 
 /* x and new must be different pointer from each other. */
-void mpfi_matrix_mul_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y){
+void mpfi_matrix_mul_fr (MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y) {
   int i, j, k, index, index_y;
   MPFI *tmp;
   r_mpfi_temp_alloc_init(tmp);
-  for(i = 0; i < new->size; i++){
+  for (i = 0; i < new->size; i++) {
     mpfi_set_si(new->data + i, 0);
   }
-  for(j = 0; j < y->column; j++){
-    for(i = 0; i < x->row; i++){
+  for (j = 0; j < y->column; j++) {
+    for (i = 0; i < x->row; i++) {
       index = i + j * new->row;
       index_y = j * y->row;
-      for(k = 0; k < x->column; k++){
+      for (k = 0; k < x->column; k++) {
 	mpfi_mul_fr(tmp, x->data + i + k * x->row, y->data + k + index_y);
 	mpfi_add(new->data + index, new->data + index, tmp);
       }
@@ -175,22 +175,22 @@ void mpfi_matrix_mul_fr(MPFIMatrix *new, MPFIMatrix *x, MPFRMatrix *y){
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_matrix_mul_scalar(MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar){
+void mpfi_matrix_mul_scalar (MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_mul(new->data + i, x->data + i, scalar);
   }
 }
 
-void mpfi_matrix_div_scalar(MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar){
+void mpfi_matrix_div_scalar (MPFIMatrix *new, MPFIMatrix *x, MPFI *scalar) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_div(new->data + i, x->data + i, scalar);
   }
 }
 
 /* Return 0 if *x includes *y. Otherwise return 1. */
-int mpfi_matrix_include_p(MPFIMatrix *x, MPFIMatrix *y){
+int mpfi_matrix_include_p (MPFIMatrix *x, MPFIMatrix *y) {
   int i, ret = 0;
   if (x->column == y->column && x->row == y->row) {
     for (i = 0; i < x->size; i++) {
@@ -199,14 +199,14 @@ int mpfi_matrix_include_p(MPFIMatrix *x, MPFIMatrix *y){
 	break;
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   return ret;
 }
 
 /* Return 0 if *x includes *y. Otherwise return 1. */
-int mpfi_matrix_include_fr_p(MPFIMatrix *x, MPFRMatrix *y){
+int mpfi_matrix_include_fr_p (MPFIMatrix *x, MPFRMatrix *y) {
   int i, ret = 0;
   if (x->column == y->column && x->row == y->row) {
     for (i = 0; i < x->size; i++) {
@@ -215,14 +215,14 @@ int mpfi_matrix_include_fr_p(MPFIMatrix *x, MPFRMatrix *y){
 	break;
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   return ret;
 }
 
 /* Return 0 if *x includes *y. Otherwise return 1. */
-int mpfi_matrix_strictly_include_p(MPFIMatrix *x, MPFIMatrix *y){
+int mpfi_matrix_strictly_include_p (MPFIMatrix *x, MPFIMatrix *y) {
   int i, ret = 0;
   if (x->column == y->column && x->row == y->row) {
     for (i = 0; i < x->size; i++) {
@@ -231,14 +231,14 @@ int mpfi_matrix_strictly_include_p(MPFIMatrix *x, MPFIMatrix *y){
 	break;
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   return ret;
 }
 
 /* Return 0 if *x is bonded. Otherwise return 1. */
-int mpfi_matrix_bounded_p(MPFIMatrix *x){
+int mpfi_matrix_bounded_p (MPFIMatrix *x) {
   int ret = 0, i;
   for (i = 0; i < x->size; i++) {
     if (mpfi_bounded_p(x->data + i) == 0) {
@@ -249,78 +249,78 @@ int mpfi_matrix_bounded_p(MPFIMatrix *x){
   return ret;
 }
 
-void mpfi_matrix_mid(MPFRMatrix *ret, MPFIMatrix *x){
+void mpfi_matrix_mid (MPFRMatrix *ret, MPFIMatrix *x) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_mid(ret->data + i, x->data + i);
   }
 }
 
-void mpfi_matrix_mid_interval(MPFIMatrix *ret, MPFIMatrix *x){
+void mpfi_matrix_mid_interval (MPFIMatrix *ret, MPFIMatrix *x) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_mid_interval(ret->data + i, x->data + i);
   }
 }
 
-void mpfi_matrix_from_mpfr_matrix(MPFIMatrix *ret, MPFRMatrix *x){
+void mpfi_matrix_from_mpfr_matrix (MPFIMatrix *ret, MPFRMatrix *x) {
   int i;
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_set_fr(ret->data + i, x->data + i);
   }
 }
 
 /* This function returns 0 if the intersection of two boxes exists. */
 /* Otherwise, it returns nonzero. */
-int mpfi_matrix_intersect(MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y){
+int mpfi_matrix_intersect (MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y) {
   int ret = 0;
   int i;
   if (x->column == y->column && x->row == y->row) {
-    for(i = 0; i < x->size; i++){
+    for (i = 0; i < x->size; i++) {
       mpfi_intersect(z->data + i, x->data + i, y->data + i);
-      if(ret == 0 && mpfi_is_empty(z->data + i)){
+      if (ret == 0 && mpfi_is_empty(z->data + i)) {
 	ret = 1;
       }
     }
     return ret;
-  }else{
+  } else {
     return -1;
   }
 }
 
 /* Return -1 if size of matrixies is not same. */
 /* Otherwise, return 0 and set convex hull to MPFIMatrix *z. */
-int mpfi_matrix_union(MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y){
+int mpfi_matrix_union (MPFIMatrix *z, MPFIMatrix *x, MPFIMatrix *y) {
   int ret = 0;
   int i;
   if (x->column == y->column && x->row == y->row) {
-    for(i = 0; i < x->size; i++){
+    for (i = 0; i < x->size; i++) {
       mpfi_union(z->data + i, x->data + i, y->data + i);
     }
     return ret;
-  }else{
+  } else {
     return -1;
   }
 }
 
-void mpfi_matrix_inner_product(MPFI *pr, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_inner_product (MPFI *pr, MPFIMatrix *x, MPFIMatrix *y) {
   MPFI *tmp;
   int i;
   r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(pr, 0);
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_mul(tmp, x->data + i, y->data + i);
     mpfi_add(pr, pr, tmp);
   }
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_matrix_vector_distance(MPFI *distance, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_vector_distance (MPFI *distance, MPFIMatrix *x, MPFIMatrix *y) {
   MPFI *tmp;
   int i;
   r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(distance, 0);
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_sub(tmp, x->data + i, y->data + i);
     mpfi_mul(tmp, tmp, tmp);
     mpfi_add(distance, distance, tmp);
@@ -329,7 +329,7 @@ void mpfi_matrix_vector_distance(MPFI *distance, MPFIMatrix *x, MPFIMatrix *y){
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_matrix_vector_distance_center_pts(MPFR *distance, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_matrix_vector_distance_center_pts (MPFR *distance, MPFIMatrix *x, MPFIMatrix *y) {
   MPFRMatrix *tmp_x, *tmp_y;
   r_mpfr_matrix_temp_alloc_init(tmp_x, x->row, x->column);
   r_mpfr_matrix_temp_alloc_init(tmp_y, y->row, y->column);
@@ -342,12 +342,12 @@ void mpfi_matrix_vector_distance_center_pts(MPFR *distance, MPFIMatrix *x, MPFIM
   r_mpfr_matrix_temp_free(tmp_y);
 }
 
-void mpfi_matrix_vector_norm(MPFI *norm, MPFIMatrix *x){
+void mpfi_matrix_vector_norm (MPFI *norm, MPFIMatrix *x) {
   MPFI *tmp;
   int i;
   r_mpfi_temp_alloc_init(tmp);
   mpfi_set_si(norm, 0);
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_mul(tmp, x->data + i, x->data + i);
     mpfi_add(norm, norm, tmp);
   }
@@ -355,20 +355,20 @@ void mpfi_matrix_vector_norm(MPFI *norm, MPFIMatrix *x){
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_matrix_max_norm(MPFI *norm, MPFIMatrix *x){
+void mpfi_matrix_max_norm (MPFI *norm, MPFIMatrix *x) {
   MPFI *tmp, *abs;
   int i;
   r_mpfi_temp_alloc_init(tmp);
   r_mpfi_temp_alloc_init(abs);
   mpfi_set_si(norm, 0);
-  for(i = 0; i < x->size; i++){
+  for (i = 0; i < x->size; i++) {
     mpfi_abs(abs, x->data + i);
     mpfi_intersect(tmp, abs, norm);
-    if(mpfi_is_empty(tmp) > 0){
-      if(mpfr_cmp(r_mpfi_right_ptr(abs), r_mpfi_left_ptr(norm)) > 0){
+    if (mpfi_is_empty(tmp) > 0) {
+      if (mpfr_cmp(r_mpfi_right_ptr(abs), r_mpfi_left_ptr(norm)) > 0) {
 	mpfi_set(norm, abs);
       }
-    }else{
+    } else {
       mpfi_union(norm, norm, abs);
     }
   }
@@ -376,7 +376,7 @@ void mpfi_matrix_max_norm(MPFI *norm, MPFIMatrix *x){
   r_mpfi_temp_free(abs);
 }
 
-void mpfi_matrix_max_diam_abs(MPFR *diam, MPFIMatrix *x){
+void mpfi_matrix_max_diam_abs (MPFR *diam, MPFIMatrix *x) {
   int i;
   MPFR *tmp;
   r_mpfr_temp_alloc_init(tmp);
@@ -384,7 +384,7 @@ void mpfi_matrix_max_diam_abs(MPFR *diam, MPFIMatrix *x){
   mpfr_set_si(diam, 0, GMP_RNDN);
   for (i = 0; i < x->size; i++) {
     mpfi_diam_abs(tmp, x->data + i);
-    if(mpfr_cmp(tmp, diam) > 0){
+    if (mpfr_cmp(tmp, diam) > 0) {
       mpfr_set(diam, tmp, GMP_RNDN);
     }
   }
@@ -394,32 +394,32 @@ void mpfi_matrix_max_diam_abs(MPFR *diam, MPFIMatrix *x){
 
 /* ------------------- vector --------------------- */
 
-void mpfi_col_vector_init(MPFIMatrix *mat, int row){
+void mpfi_col_vector_init (MPFIMatrix *mat, int row) {
   int i;
   mat->row = row;
   mat->column = 1;
   mat->size = row;
   /* mat->data = (MPFI *)malloc(sizeof(MPF) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  for(i = 0; i < mat->size; i++){
+  for (i = 0; i < mat->size; i++) {
     mpfi_init(mat->data + i);
   }
 }
 
-void mpfi_row_vector_init(MPFIMatrix *mat, int column){
+void mpfi_row_vector_init (MPFIMatrix *mat, int column) {
   int i;
   mat->row = 1;
   mat->column = column;
   mat->size = column;
   /* mat->data = (MPFI *)malloc(sizeof(MPF) * mat->size); */
   mat->data = ALLOC_N(MPFI, mat->size);
-  for(i = 0; i < mat->size; i++){
+  for (i = 0; i < mat->size; i++) {
     mpfi_init(mat->data + i);
   }
 }
 
 /* If length of MPFIMatrix *x is zero, return 1. Otherwise return 0. */
-int mpfi_vector_normalize(MPFIMatrix *new, MPFIMatrix *x){
+int mpfi_vector_normalize (MPFIMatrix *new, MPFIMatrix *x) {
   MPFRMatrix *fr_mat;
   MPFR *norm;
   int i, j, index, ret = 0;
@@ -427,14 +427,14 @@ int mpfi_vector_normalize(MPFIMatrix *new, MPFIMatrix *x){
   mpfi_matrix_mid(fr_mat, x);
   r_mpfr_temp_alloc_init(norm);
   mpfr_matrix_vector_norm(norm, fr_mat);
-  if(mpfr_cmp_ui(norm, 0) > 0){
-    for(j = 0; j < x->column; j++){
+  if (mpfr_cmp_ui(norm, 0) > 0) {
+    for (j = 0; j < x->column; j++) {
       index = j * x->row;
-      for(i = 0; i < x->row; i++){
+      for (i = 0; i < x->row; i++) {
 	mpfi_div_fr(new->data + i + index, x->data + i + index, norm);
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   r_mpfr_matrix_temp_free(fr_mat);
@@ -442,7 +442,7 @@ int mpfi_vector_normalize(MPFIMatrix *new, MPFIMatrix *x){
   return ret;
 }
 
-void mpfi_vector_midpoint(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
+void mpfi_vector_midpoint (MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y) {
   int i;
   for (i = 0; i < new->size; i++) {
     mpfi_add(mpfi_matrix_get_ptr(new, i), mpfi_matrix_get_ptr(x, i), mpfi_matrix_get_ptr(y, i));
@@ -451,7 +451,7 @@ void mpfi_vector_midpoint(MPFIMatrix *new, MPFIMatrix *x, MPFIMatrix *y){
 }
 
 /* If length of MPFIMatrix *x is zero, return 1. Otherwise return 0. */
-int mpfi_vector_set_length(MPFIMatrix *new, MPFIMatrix *x, MPFR *length){
+int mpfi_vector_set_length (MPFIMatrix *new, MPFIMatrix *x, MPFR *length) {
   MPFI *norm_i;
   MPFR *factor_r;
   int i, j, index, ret = 0;
@@ -459,16 +459,16 @@ int mpfi_vector_set_length(MPFIMatrix *new, MPFIMatrix *x, MPFR *length){
   r_mpfr_temp_alloc_init(factor_r);
   mpfi_matrix_vector_norm(norm_i, x);
   mpfi_mid(factor_r, norm_i);
-  if(mpfr_cmp_ui(factor_r, 0) > 0){
+  if (mpfr_cmp_ui(factor_r, 0) > 0) {
     mpfr_ui_div(factor_r, 1, factor_r, GMP_RNDN);
     mpfr_mul(factor_r, factor_r, length, GMP_RNDN);
-    for(j = 0; j < x->column; j++){
+    for (j = 0; j < x->column; j++) {
       index = j * x->row;
-      for(i = 0; i < x->row; i++){
+      for (i = 0; i < x->row; i++) {
 	mpfi_mul_fr(new->data + i + index, x->data + i + index, factor_r);
       }
     }
-  }else{
+  } else {
     ret = 1;
   }
   r_mpfi_temp_free(norm_i);
@@ -480,7 +480,7 @@ int mpfi_vector_set_length(MPFIMatrix *new, MPFIMatrix *x, MPFR *length){
 
 /* Return 0 if we execute even permutation for matrix, 1 if odd permutation or */
 /* -1 if matrix is singular. */
-int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x){
+int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x) {
   int i, j, k, imax, ret_val = 0;
   MPFI *big, *sum, *dum, *tmp1, *tmp2;
   MPFIMatrix *vv, *tmp_ret;
@@ -500,11 +500,11 @@ int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x){
       mpfi_abs(tmp1, mpfi_matrix_get_element(x, i, j));
 
       mpfi_intersect(tmp2, tmp1, big);
-      if(mpfi_is_empty(tmp2) > 0){
-	if(mpfr_cmp(r_mpfi_right_ptr(tmp1), r_mpfi_left_ptr(big)) > 0){
+      if (mpfi_is_empty(tmp2) > 0) {
+	if (mpfr_cmp(r_mpfi_right_ptr(tmp1), r_mpfi_left_ptr(big)) > 0) {
 	  mpfi_set(big, tmp1);
 	}
-      }else{
+      } else {
 	mpfi_union(big, tmp1, big);
       }
     }
@@ -538,12 +538,12 @@ int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x){
 	mpfi_mul(dum, vv->data + i, dum);
 
 	mpfi_intersect(tmp2, dum, big);
-	if(mpfi_is_empty(tmp2) > 0){
-	  if(mpfr_cmp(r_mpfi_right_ptr(dum), r_mpfi_left_ptr(big)) > 0){
+	if (mpfi_is_empty(tmp2) > 0) {
+	  if (mpfr_cmp(r_mpfi_right_ptr(dum), r_mpfi_left_ptr(big)) > 0) {
 	    mpfi_set(big, dum);
 	    imax = i;
 	  }
-	}else{
+	} else {
 	  mpfi_union(big, dum, big);
 	  imax = i;
 	}
@@ -582,7 +582,7 @@ int mpfi_square_matrix_lu_decomp (MPFIMatrix *ret, int *indx, MPFIMatrix *x){
   return ret_val;
 }
 
-static void mpfi_2d_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
+static void mpfi_2d_square_matrix_determinant (MPFI *det, MPFIMatrix *x) {
   MPFI *tmp;
   r_mpfi_temp_alloc_init(tmp);
   mpfi_mul(det, x->data, x->data + 3);
@@ -591,7 +591,7 @@ static void mpfi_2d_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
   r_mpfi_temp_free(tmp);
 }
 
-static void mpfi_3d_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
+static void mpfi_3d_square_matrix_determinant (MPFI *det, MPFIMatrix *x) {
   MPFI *tmp;
   r_mpfi_temp_alloc_init(tmp);
 
@@ -622,17 +622,17 @@ static void mpfi_3d_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
-  if (x->column == 2 && x->row == 2){
+void mpfi_square_matrix_determinant (MPFI *det, MPFIMatrix *x) {
+  if (x->column == 2 && x->row == 2) {
     mpfi_2d_square_matrix_determinant(det, x);
-  }else if(x->column == 3 && x->row == 3){
+  } else if (x->column == 3 && x->row == 3) {
     mpfi_3d_square_matrix_determinant(det, x);
-  }else{
+  } else {
     MPFIMatrix *ptr_lu;
     int *indx, i;
     r_mpfi_matrix_temp_alloc_init(ptr_lu, x->row, x->column);
     indx = (int *) malloc(sizeof(int) * x->row);
-    if((i = mpfi_square_matrix_lu_decomp (ptr_lu, indx, x)) >= 0){
+    if ((i = mpfi_square_matrix_lu_decomp (ptr_lu, indx, x)) >= 0) {
       if (i == 0) {
 	mpfi_set_si(det, 1);
       } else if (i == 1) {
@@ -641,7 +641,7 @@ void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
       for (i = 0; i < x->row; i++) {
         mpfi_mul(det, det, mpfi_matrix_get_element(ptr_lu, i, i));
       }
-    }else{
+    } else {
       mpfi_set_ui(det, 0);
     }
     r_mpfi_matrix_temp_free(ptr_lu);
@@ -649,7 +649,7 @@ void mpfi_square_matrix_determinant(MPFI *det, MPFIMatrix *x){
   }
 }
 
-void mpfi_square_matrix_qr_decomp(MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x){
+void mpfi_square_matrix_qr_decomp (MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x) {
   MPFIMatrix *q_mat, *r_mat;
   int size, i, j, k, ind1, ind2, ind3;
   MPFIMatrix *ary;
@@ -696,14 +696,14 @@ void mpfi_square_matrix_qr_decomp(MPFIMatrix *q, MPFIMatrix *r, MPFIMatrix *x){
   r_mpfi_temp_free(tmp);
 }
 
-void mpfi_square_matrix_identity(MPFIMatrix *id){
+void mpfi_square_matrix_identity (MPFIMatrix *id) {
   int i, j, index;
   for (j = 0; j < id->column; j++) {
     index = j * id->row;
     for (i = 0; i < id->row; i++) {
-      if(i == j){
+      if (i == j) {
 	mpfi_set_si(id->data + i + index, 1);
-      }else{
+      } else {
 	mpfi_set_si(id->data + i + index, 0);
       }
     }
